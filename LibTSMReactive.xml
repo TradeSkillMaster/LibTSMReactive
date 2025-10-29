@@ -1,0 +1,17 @@
+<Ui xmlns="http://www.blizzard.com/wow/ui/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.blizzard.com/wow/ui/
+..\FrameXML\UI.xsd">
+    <Script file="Source\Core.lua" />
+
+    <Script file="Source\Type\Util.lua" />
+    <Script file="Source\Type\CompiledPublisher.lua" />
+    <Script file="Source\Type\PublisherCodeGen.lua" />
+    <Script file="Source\Type\Publisher.lua" />
+    <Script file="Source\Type\PublisherSchema.lua" />
+    <Script file="Source\Type\StateExpression.lua" />
+    <Script file="Source\Type\State.lua" />
+    <Script file="Source\Type\StateSchema.lua" />
+    <Script file="Source\Type\Stream.lua" />
+    <Script file="Source\Reactive.lua" />
+    <Script file="Source\UIManager.lua" />
+    <Script file="Source\UIBindings.lua" />
+</Ui>
