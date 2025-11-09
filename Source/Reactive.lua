@@ -6,9 +6,9 @@
 
 local LibTSMReactive = select(2, ...).LibTSMReactive
 local Reactive = LibTSMReactive:Init("Reactive")
+local ReactiveOneShot = LibTSMReactive:IncludeClassType("ReactiveOneShot")
 local ReactiveStateSchema = LibTSMReactive:IncludeClassType("ReactiveStateSchema")
 local ReactiveStream = LibTSMReactive:IncludeClassType("ReactiveStream")
-local OneShot = LibTSMReactive:IncludeClassType("OneShot")
 
 
 
@@ -36,5 +36,5 @@ end
 ---@param autoStore? table The table to store the publisher in automatically
 ---@return ReactivePublisherSchema
 function Reactive.GetOneShotPublisher(value, autoDisable, autoStore)
-	return OneShot.GetPublisher(value, autoDisable, autoStore)
+	return ReactiveOneShot.GetPublisher(value, autoDisable, autoStore)
 end

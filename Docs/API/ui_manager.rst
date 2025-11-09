@@ -1,9 +1,9 @@
 UIManager
 =========
 
-The ``UIManager`` class is intended to be used with the ``Reactive`` framework and provides a
-framework for building state-driven UIs. See the :doc:`Reactive Framework </reactive>` documentation for more
-information about how to use the ``UIManager`` class.
+The ``UIManager`` class provides the framework for driving state updates in response to UI
+interactions or other events. It also manages many of the other components of building a
+state-driven UI, from creating the frame itself, to managing the state and related publishers.
 
 Memory Management
 -----------------
