@@ -5,9 +5,9 @@
 -- ------------------------------------------------------------------------------ --
 
 local LibTSMReactive = select(2, ...).LibTSMReactive
-local ReactivePublisherCodeGen = LibTSMReactive:DefineClassType("ReactivePublisherCodeGen")
-local CompiledPublisher = LibTSMReactive:Include("Reactive.Type.CompiledPublisher")
-local Util = LibTSMReactive:Include("Reactive.Type.Util")
+local ReactivePublisherCodeGen = LibTSMReactive:DefineInternalClassType("ReactivePublisherCodeGen")
+local CompiledPublisher = LibTSMReactive:Include("Reactive.CompiledPublisher")
+local Util = LibTSMReactive:Include("Reactive.Util")
 local EnumType = LibTSMReactive:From("LibTSMUtil"):Include("BaseType.EnumType")
 local Table = LibTSMReactive:From("LibTSMUtil"):Include("Lua.Table")
 local Vararg = LibTSMReactive:From("LibTSMUtil"):Include("Lua.Vararg")

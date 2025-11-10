@@ -22,7 +22,7 @@ function TestState:tearDown()
 		cancellable:Cancel()
 	end
 	wipe(private.cancellables)
-	local objectPool = Locals["LibTSMReactive.Type.PublisherSchema"].private.objectPool
+	local objectPool = Locals["LibTSMReactive.Internal.PublisherSchema"].private.objectPool
 	assertEquals(objectPool._state, {})
 end
 

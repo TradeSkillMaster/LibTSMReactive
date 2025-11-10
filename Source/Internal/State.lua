@@ -5,7 +5,7 @@
 -- ------------------------------------------------------------------------------ --
 
 local LibTSMReactive = select(2, ...).LibTSMReactive
-local State = LibTSMReactive:Init("Reactive.Type.State")
+local State = LibTSMReactive:InitInternal("Reactive.State")
 local Expression = LibTSMReactive:IncludeClassType("ReactiveStateExpression")
 local ReactivePublisherSchema = LibTSMReactive:IncludeClassType("ReactivePublisherSchema")
 local Table = LibTSMReactive:From("LibTSMUtil"):Include("Lua.Table")
@@ -381,7 +381,7 @@ end
 function State.GetDebugData()
 	local result = {}
 	for state, context in pairs(private.stateContext) do
-		result[tostring(state)] = context.data
+		result[tostring(state)] = CopyTable(context.data, true)
 	end
 	return result
 end

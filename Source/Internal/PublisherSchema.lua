@@ -5,10 +5,10 @@
 -- ------------------------------------------------------------------------------ --
 
 local LibTSMReactive = select(2, ...).LibTSMReactive
-local ReactivePublisherSchema = LibTSMReactive:DefineClassType("ReactivePublisherSchema")
+local ReactivePublisherSchema = LibTSMReactive:DefineInternalClassType("ReactivePublisherSchema")
 local ReactivePublisher = LibTSMReactive:IncludeClassType("ReactivePublisher")
 local ReactivePublisherCodeGen = LibTSMReactive:IncludeClassType("ReactivePublisherCodeGen")
-local Util = LibTSMReactive:Include("Reactive.Type.Util")
+local Util = LibTSMReactive:Include("Reactive.Util")
 local ObjectPool = LibTSMReactive:From("LibTSMUtil"):IncludeClassType("ObjectPool")
 local private = {
 	objectPool = ObjectPool.New("PUBLISHER_SCHEMA", ReactivePublisherSchema, 2),

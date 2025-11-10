@@ -5,7 +5,7 @@
 -- ------------------------------------------------------------------------------ --
 
 local LibTSMReactive = select(2, ...).LibTSMReactive
-local Util = LibTSMReactive:Init("Reactive.Type.Util")
+local Util = LibTSMReactive:InitInternal("Reactive.Util")
 local EnumType = LibTSMReactive:From("LibTSMUtil"):Include("BaseType.EnumType")
 Util.INITIAL_IGNORE_VALUE = newproxy(false)
 local STEP = EnumType.New("PUBLISHER_STEP", {
