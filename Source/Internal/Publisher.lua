@@ -5,7 +5,7 @@
 -- ------------------------------------------------------------------------------ --
 
 local LibTSMReactive = select(2, ...).LibTSMReactive
-local ReactivePublisher = LibTSMReactive:DefineClassType("ReactivePublisher")
+local ReactivePublisher = LibTSMReactive:DefineInternalClassType("ReactivePublisher")
 local EnumType = LibTSMReactive:From("LibTSMUtil"):Include("BaseType.EnumType")
 local ObjectPool = LibTSMReactive:From("LibTSMUtil"):IncludeClassType("ObjectPool")
 local private = {

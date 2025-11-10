@@ -5,7 +5,7 @@
 -- ------------------------------------------------------------------------------ --
 
 local LibTSMReactive = select(2, ...).LibTSMReactive
-local ReactiveStream = LibTSMReactive:DefineClassType("ReactiveStream")
+local ReactiveStream = LibTSMReactive:DefineInternalClassType("ReactiveStream")
 local ReactivePublisherSchema = LibTSMReactive:IncludeClassType("ReactivePublisherSchema")
 local OrderedTable = LibTSMReactive:From("LibTSMUtil"):Include("BaseType.OrderedTable")
 local ObjectPool = LibTSMReactive:From("LibTSMUtil"):IncludeClassType("ObjectPool")

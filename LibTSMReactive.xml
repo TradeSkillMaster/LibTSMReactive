@@ -2,16 +2,17 @@
 ..\FrameXML\UI.xsd">
     <Script file="Source\Core.lua" />
 
-    <Script file="Source\Type\Util.lua" />
-    <Script file="Source\Type\CompiledPublisher.lua" />
-    <Script file="Source\Type\PublisherCodeGen.lua" />
-    <Script file="Source\Type\Publisher.lua" />
-    <Script file="Source\Type\PublisherSchema.lua" />
-    <Script file="Source\Type\StateExpression.lua" />
-    <Script file="Source\Type\State.lua" />
-    <Script file="Source\Type\StateSchema.lua" />
-    <Script file="Source\Type\Stream.lua" />
+    <Script file="Source\Internal\Util.lua" />
+    <Script file="Source\Internal\CompiledPublisher.lua" />
+    <Script file="Source\Internal\PublisherCodeGen.lua" />
+    <Script file="Source\Internal\Publisher.lua" />
+    <Script file="Source\Internal\PublisherSchema.lua" />
+    <Script file="Source\Internal\StateExpression.lua" />
+    <Script file="Source\Internal\State.lua" />
+    <Script file="Source\Internal\StateSchema.lua" />
+    <Script file="Source\Internal\Stream.lua" />
     <Script file="Source\Reactive.lua" />
     <Script file="Source\UIManager.lua" />
     <Script file="Source\UIBindings.lua" />
+    <Script file="Source\Debug.lua" />
 </Ui>

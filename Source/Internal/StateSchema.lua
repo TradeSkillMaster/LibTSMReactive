@@ -5,8 +5,8 @@
 -- ------------------------------------------------------------------------------ --
 
 local LibTSMReactive = select(2, ...).LibTSMReactive
-local ReactiveStateSchema = LibTSMReactive:DefineClassType("ReactiveStateSchema")
-local State = LibTSMReactive:Include("Reactive.Type.State")
+local ReactiveStateSchema = LibTSMReactive:DefineInternalClassType("ReactiveStateSchema")
+local State = LibTSMReactive:Include("Reactive.State")
 local EnumType = LibTSMReactive:From("LibTSMUtil"):Include("BaseType.EnumType")
 
 

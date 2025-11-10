@@ -5,7 +5,7 @@
 -- ------------------------------------------------------------------------------ --
 
 local LibTSMReactive = select(2, ...).LibTSMReactive
-local ReactiveStateExpression = LibTSMReactive:DefineClassType("ReactiveStateExpression")
+local ReactiveStateExpression = LibTSMReactive:DefineInternalClassType("ReactiveStateExpression")
 local EnumType = LibTSMReactive:From("LibTSMUtil"):Include("BaseType.EnumType")
 local String = LibTSMReactive:From("LibTSMUtil"):Include("Lua.String")
 local Table = LibTSMReactive:From("LibTSMUtil"):Include("Lua.Table")

@@ -5,8 +5,8 @@
 -- ------------------------------------------------------------------------------ --
 
 local LibTSMReactive = select(2, ...).LibTSMReactive
-local CompiledPublisher = LibTSMReactive:Init("Reactive.Type.CompiledPublisher")
-local Util = LibTSMReactive:Include("Reactive.Type.Util")
+local CompiledPublisher = LibTSMReactive:InitInternal("Reactive.CompiledPublisher")
+local Util = LibTSMReactive:Include("Reactive.Util")
 local private = {
 	context = {} ---@type table<CompiledPublisherObject,CompiledPublisherContext>
 }
