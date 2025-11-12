@@ -269,7 +269,9 @@ STEP_INFO[STEP.PRINT].codeTemplate =
   else
     print(format("Published value: %%s", tostring(data)))
   end
-  Dump(data)
+  if type(data) == "table" then
+    Dump(data)
+  end
 end]=]
 STEP_INFO[STEP.CALL_METHOD] = { argTypes = { ARG_TYPE.TABLE, ARG_TYPE.STRING } }
 STEP_INFO[STEP.CALL_METHOD].codeTemplate =
