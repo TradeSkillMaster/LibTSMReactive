@@ -97,6 +97,7 @@ local FUNC_ENV = setmetatable({
 	wipe = wipe,
 	min = min,
 	max = max,
+	type = type,
 }, {
 	__index = function(_, key)
 		error("Attempt to access global from compiled publisher: "..tostring(key), 2)
