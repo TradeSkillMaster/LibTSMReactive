@@ -8,6 +8,7 @@ local LibTSMReactive = select(2, ...).LibTSMReactive
 local State = LibTSMReactive:InitInternal("Reactive.State")
 local Expression = LibTSMReactive:IncludeClassType("ReactiveStateExpression")
 local ReactivePublisherSchema = LibTSMReactive:IncludeClassType("ReactivePublisherSchema")
+local ContextManager = LibTSMReactive:From("LibTSMUtil"):Include("BaseType.ContextManager")
 local Table = LibTSMReactive:From("LibTSMUtil"):Include("Lua.Table")
 local Vararg = LibTSMReactive:From("LibTSMUtil"):Include("Lua.Vararg")
 local private = {
@@ -15,6 +16,7 @@ local private = {
 	stateContext = {}, ---@type table<ReactiveState,StateContext>
 	debugLinesTemp = {},
 	keysTemp = {},
+	contextManager = ContextManager.Create(function(state) state:SetAutoStorePaused(true) return state end, function(state) state:SetAutoStorePaused(false) end),
 }
 
 ---@class StateContext
@@ -171,6 +173,14 @@ function STATE_METHODS:SetAutoDisable(disable)
 	local context = private.stateContext[self]
 	context.autoDisable = disable
 	return self
+end
+
+---Returns an iterator which executes exactly once with auto store paused within the loop body.
+---@return function
+---@return any
+---@return any
+function STATE_METHODS:WithAutoStorePaused()
+	return private.contextManager:With(self)
 end
 
 ---@private
