@@ -58,15 +58,15 @@ function TestState:TestPublisher()
 		:SetAutoStore(private.cancellables)
 
 	local publishedValues1 = {}
-	state:PublisherForKeyChange("num1")
+	state:Publisher("num1")
 		:CallFunction(function(value) tinsert(publishedValues1, value) end)
 
 	local publishedValues2, publishedValues3 = {}, {}
-	state:PublisherForKeyChange("str1")
+	state:Publisher("str1")
 		:IgnoreIfEquals("ignore1")
 		:IgnoreIfEquals("ignore2")
 		:CallFunction(function(value) tinsert(publishedValues2, value) end)
-	state:PublisherForKeyChange("str1")
+	state:Publisher("str1")
 		:IgnoreIfEquals("ignore1")
 		:IgnoreIfEquals("ignore3")
 		:CallFunction(function(value) tinsert(publishedValues3, value) end)
@@ -101,7 +101,7 @@ function TestState:TestPublisher()
 	assertEquals(publishedValues3, {"", "a", "ignore2"})
 
 	local publishedValues4 = {}
-	state:PublisherForKeyChange("num1")
+	state:Publisher("num1")
 		:MapToValue({val = 2, GetValue = function(self, extra) return self.val + extra end})
 		:MapWithMethod("GetValue", 1)
 		:CallFunction(function(value) tinsert(publishedValues4, value) end)
@@ -116,7 +116,7 @@ function TestState:TestNilDuplicates()
 		:SetAutoStore(private.cancellables)
 
 	local publishedValues = {}
-	state:PublisherForKeyChange("num")
+	state:Publisher("num")
 		:MapNilToValue(-1)
 		:CallFunction(function(value) tinsert(publishedValues, value) end)
 
@@ -201,7 +201,7 @@ function TestState:TestShare()
 
 	local publishedValues1 = {}
 	local publishedValues2 = {}
-	state:PublisherForKeyChange("num")
+	state:Publisher("num")
 		:IgnoreIfEquals(0)
 		:Share()
 		:MapWithFunction(function(value) return floor(value / 2) end)
@@ -244,11 +244,11 @@ function TestState:TestStateExpression()
 	local publishedValues1 = {}
 	local publishedValues2 = {}
 	local publishedValues3 = {}
-	state:PublisherForExpression([[num1 + num2]])
+	state:Publisher([[num1 + num2]])
 		:CallFunction(function(value) tinsert(publishedValues1, value) end)
-	state:PublisherForExpression([[-1 * (EnumEquals(color, RED) and -num1 or -num2)]])
+	state:Publisher([[-1 * (EnumEquals(color, RED) and -num1 or -num2)]])
 		:CallFunction(function(value) tinsert(publishedValues2, value) end)
-	state:PublisherForExpression([[EnumEquals(color, RED) and "String 1" or "String 2"]])
+	state:Publisher([[EnumEquals(color, RED) and "String 1" or "String 2"]])
 		:CallFunction(function(value) tinsert(publishedValues3, value) end)
 
 	assertEquals(publishedValues1, {30})
@@ -271,7 +271,7 @@ function TestState:TestStateExpression()
 	assertEquals(publishedValues3, {"String 1", "String 2"})
 
 	local publishedValues4 = {}
-	state:PublisherForExpression([[str == "1+2" and "orig" or "changed"]])
+	state:Publisher([[str == "1+2" and "orig" or "changed"]])
 		:CallFunction(function(value) tinsert(publishedValues4, value) end)
 	assertEquals(publishedValues4, {"orig"})
 	state.str = "2+3"
@@ -287,10 +287,10 @@ function TestState:TestDeferred()
 
 	local publishedValues = {}
 	state:SetAutoDeferred(true)
-	state:PublisherForKeyChange("str")
+	state:Publisher("str")
 		:CallFunction(function(value) tinsert(publishedValues, "1_"..value) end)
 	state:SetAutoDeferred(false)
-	state:PublisherForKeyChange("str")
+	state:Publisher("str")
 		:CallFunction(function(value) tinsert(publishedValues, "2_"..value) end)
 	assertEquals(publishedValues, {"1_A", "2_A"})
 
@@ -307,7 +307,7 @@ function TestState:TestDisable()
 		:SetAutoDisable(true)
 
 	local publishedValues = {}
-	local publisher = state:PublisherForKeyChange("str")
+	local publisher = state:Publisher("str")
 		:CallFunction(function(value) tinsert(publishedValues, value) end)
 	assertEquals(publishedValues, {})
 
