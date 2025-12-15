@@ -24,6 +24,8 @@ function TestState:tearDown()
 	wipe(private.cancellables)
 	local objectPool = Locals["LibTSMReactive.Internal.PublisherSchema"].private.objectPool
 	assertEquals(objectPool._state, {})
+	local objectPoolShared = Locals["LibTSMReactive.Internal.PublisherSchemaShared"].private.objectPool
+	assertEquals(objectPoolShared._state, {})
 end
 
 function TestState:TestSetGetValues()
@@ -206,8 +208,8 @@ function TestState:TestShare()
 		:Share()
 		:MapWithFunction(function(value) return floor(value / 2) end)
 		:IgnoreDuplicates()
-		:CallFunctionAndContinueShare(function(value) tinsert(publishedValues1, value) end)
-		:CallFunctionAndContinueShare(function(value) tinsert(publishedValues2, value) end)
+		:CallFunction(function(value) tinsert(publishedValues1, value) end)
+		:CallFunction(function(value) tinsert(publishedValues2, value) end)
 		:EndShare()
 
 	state.num = 1

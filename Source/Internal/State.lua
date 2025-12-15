@@ -183,10 +183,10 @@ function STATE_METHODS:_GetPublisher()
 	local context = private.stateContext[self]
 	local schema = ReactivePublisherSchema.Get(self)
 	if context.autoStore and not context.autoStorePaused then
-		schema:AutoStore(context.autoStore)
+		schema:_AutoStore(context.autoStore) ---@diagnostic disable-line invisible
 	end
 	if context.autoDisable then
-		schema:AutoDisable()
+		schema:_AutoDisable() ---@diagnostic disable-line invisible
 	end
 	return schema
 end
@@ -215,7 +215,7 @@ function STATE_METHODS:_GetPublisherForExpressionHelper(expressionStr)
 		publisher:IgnoreDuplicatesWithKeys(Table.UnpackAndWipe(private.keysTemp))
 	end
 	return publisher
-		:MapWithStateExpression(expression)
+		:_MapWithStateExpression(expression) ---@diagnostic disable-line invisible
 		:IgnoreDuplicates()
 end
 

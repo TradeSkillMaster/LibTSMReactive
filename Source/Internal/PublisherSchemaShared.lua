@@ -1,0 +1,87 @@
+-- ------------------------------------------------------------------------------ --
+--                                 LibTSMReactive                                 --
+--               https://github.com/TradeSkillMaster/LibTSMReactive               --
+--         Licensed under the MIT license. See LICENSE.txt for more info.         --
+-- ------------------------------------------------------------------------------ --
+
+local LibTSMReactive = select(2, ...).LibTSMReactive
+local ReactivePublisherSchemaBase = LibTSMReactive:IncludeClassType("ReactivePublisherSchemaBase")
+local ReactivePublisherSchemaShared = LibTSMReactive:DefineInternalClassType("ReactivePublisherSchemaShared", ReactivePublisherSchemaBase)
+local ObjectPool = LibTSMReactive:From("LibTSMUtil"):IncludeClassType("ObjectPool")
+local private = {
+	objectPool = ObjectPool.New("PUBLISHER_SCHEMA_SHARED", ReactivePublisherSchemaShared --[[@as Class]], 2),
+}
+
+
+
+-- ============================================================================
+-- Static Class Functions
+-- ============================================================================
+
+---Gets a shared publisher schema object.
+---@param parentSchema ReactivePublisherSchema The parent schema which is being shared
+---@param codeGen ReactivePublisherCodeGen The code gen object to add steps to
+---@return ReactivePublisherSchemaShared
+function ReactivePublisherSchemaShared.__static.Get(parentSchema, codeGen)
+	local publisher = private.objectPool:Get()
+	publisher:_Acquire(parentSchema, codeGen)
+	return publisher
+end
+
+
+
+-- ============================================================================
+-- Meta Class Methods
+-- ============================================================================
+
+function ReactivePublisherSchemaShared.__protected:__init()
+	self.__super:__init(true)
+	self._parentSchema = nil
+	self._codeGen = nil
+end
+
+---@param parentSchema ReactivePublisherSchema
+---@param codeGen ReactivePublisherCodeGen
+function ReactivePublisherSchemaShared.__protected:_Acquire(parentSchema, codeGen)
+	self._parentSchema = parentSchema
+	self._codeGen = codeGen
+end
+
+function ReactivePublisherSchemaShared.__protected:_Release()
+	assert(not self._codeGen)
+	self._parentSchema = nil
+	private.objectPool:Recycle(self)
+end
+
+
+
+-- ============================================================================
+-- Public Class Methods
+-- ============================================================================
+
+---Ends the share.
+---@return ReactivePublisher
+function ReactivePublisherSchemaShared:EndShare()
+	return self:_Commit()
+end
+
+
+
+-- ============================================================================
+-- Private Class Methods
+-- ============================================================================
+
+function ReactivePublisherSchemaShared.__protected:_AddStepHelper(stepType, ...)
+	assert(self._codeGen)
+	self._codeGen:AddStep(stepType, ...)
+	return self
+end
+
+---@protected
+function ReactivePublisherSchemaShared:_Commit()
+	assert(self._codeGen)
+	self._codeGen = nil
+	local publisher = self._parentSchema:_Commit() ---@diagnostic disable-line invisible
+	self:_Release()
+	return publisher
+end
