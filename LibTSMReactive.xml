@@ -6,6 +6,8 @@
     <Script file="Source\Internal\CompiledPublisher.lua" />
     <Script file="Source\Internal\PublisherCodeGen.lua" />
     <Script file="Source\Internal\Publisher.lua" />
+    <Script file="Source\Internal\PublisherSchemaBase.lua" />
+    <Script file="Source\Internal\PublisherSchemaShared.lua" />
     <Script file="Source\Internal\PublisherSchema.lua" />
     <Script file="Source\Internal\StateExpression.lua" />
     <Script file="Source\Internal\State.lua" />
