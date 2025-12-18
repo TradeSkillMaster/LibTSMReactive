@@ -68,7 +68,7 @@ end
 ---Defines a number field as part of the schema.
 ---@param key string The key of the new field
 ---@param default number The default value of the field
----@param validateFunc? fun(value: string): boolean A function used to validate values
+---@param validateFunc? fun(value: number): boolean A function used to validate values
 ---@return ReactiveStateSchema
 function ReactiveStateSchema:AddNumberField(key, default, validateFunc)
 	return self:_AddField(key, "number", default, false, validateFunc)
@@ -76,7 +76,7 @@ end
 
 ---Defines a number field as part of the schema which can be nil (and is by default).
 ---@param key string The key of the new field
----@param validateFunc? fun(value: string): boolean A function used to validate values
+---@param validateFunc? fun(value: number): boolean A function used to validate values
 ---@return ReactiveStateSchema
 function ReactiveStateSchema:AddOptionalNumberField(key, validateFunc)
 	return self:_AddField(key, "number", nil, true, validateFunc)
@@ -99,7 +99,7 @@ end
 
 ---Defines a table field as part of the schema which can be nil (and is by default).
 ---@param key string The key of the new field
----@param validateFunc? fun(value: string): boolean A function used to validate values
+---@param validateFunc? fun(value: table): boolean A function used to validate values
 ---@return ReactiveStateSchema
 function ReactiveStateSchema:AddOptionalTableField(key, validateFunc)
 	return self:_AddField(key, "table", nil, true, validateFunc)
