@@ -128,7 +128,7 @@ function ReactiveStateExpression.__private:_Compile(expression)
 	end
 	expression = "local __context = context[%(contextArgIndex)d]\ndata = "..expression
 	if numIgnore > 0 then
-		expression = expression.."\n".."if data == __context.__ignore then return end"
+		expression = expression.."\n".."if data == __context.__ignore then break end"
 	end
 	self._code = expression
 end
