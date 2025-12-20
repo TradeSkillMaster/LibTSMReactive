@@ -64,7 +64,6 @@ end
 
 ---Shares the result of the publisher at the current point in the chain.
 ---@return ReactivePublisherSchemaShared
----@nodiscard
 function ReactivePublisherSchemaShared:NestedShare()
 	self._numShares = self._numShares + 1
 	return self:_AddStepHelper(STEP.SHARE)
