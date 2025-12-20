@@ -7,10 +7,12 @@
 local LibTSMReactive = select(2, ...).LibTSMReactive
 local ReactivePublisherSchemaBase = LibTSMReactive:IncludeClassType("ReactivePublisherSchemaBase")
 local ReactivePublisherSchemaShared = LibTSMReactive:DefineInternalClassType("ReactivePublisherSchemaShared", ReactivePublisherSchemaBase)
+local Util = LibTSMReactive:Include("Reactive.Util")
 local ObjectPool = LibTSMReactive:From("LibTSMUtil"):IncludeClassType("ObjectPool")
 local private = {
 	objectPool = ObjectPool.New("PUBLISHER_SCHEMA_SHARED", ReactivePublisherSchemaShared --[[@as Class]], 2),
 }
+local STEP = Util.PUBLISHER_STEP
 
 
 
@@ -19,7 +21,7 @@ local private = {
 -- ============================================================================
 
 ---Gets a shared publisher schema object.
----@param parentSchema ReactivePublisherSchema The parent schema which is being shared
+---@param parentSchema ReactivePublisherSchemaBase The parent schema which is being shared
 ---@param codeGen ReactivePublisherCodeGen The code gen object to add steps to
 ---@return ReactivePublisherSchemaShared
 function ReactivePublisherSchemaShared.__static.Get(parentSchema, codeGen)
@@ -38,9 +40,10 @@ function ReactivePublisherSchemaShared.__protected:__init()
 	self.__super:__init(true)
 	self._parentSchema = nil
 	self._codeGen = nil
+	self._numShares = 0
 end
 
----@param parentSchema ReactivePublisherSchema
+---@param parentSchema ReactivePublisherSchemaBase
 ---@param codeGen ReactivePublisherCodeGen
 function ReactivePublisherSchemaShared.__protected:_Acquire(parentSchema, codeGen)
 	self._parentSchema = parentSchema
@@ -59,9 +62,26 @@ end
 -- Public Class Methods
 -- ============================================================================
 
+---Shares the result of the publisher at the current point in the chain.
+---@return ReactivePublisherSchemaShared
+---@nodiscard
+function ReactivePublisherSchemaShared:NestedShare()
+	self._numShares = self._numShares + 1
+	return self:_AddStepHelper(STEP.SHARE)
+end
+
+---Ends the nested share.
+---@return ReactivePublisherSchemaShared
+function ReactivePublisherSchemaShared:EndNestedShare()
+	assert(self._numShares > 0)
+	self._numShares = self._numShares - 1
+	return self:_AddStepHelper(STEP.END_SHARE)
+end
+
 ---Ends the share.
 ---@return ReactivePublisher
 function ReactivePublisherSchemaShared:EndShare()
+	self:_AddStepHelper(STEP.END_SHARE)
 	return self:_Commit()
 end
 
@@ -79,9 +99,13 @@ end
 
 ---@protected
 function ReactivePublisherSchemaShared:_Commit()
+	assert(self._numShares == 0)
 	assert(self._codeGen)
 	self._codeGen = nil
-	local publisher = self._parentSchema:_Commit() ---@diagnostic disable-line invisible
+	local parentSchema = self._parentSchema
+	assert(not parentSchema:IsShared())
+	---@cast parentSchema ReactivePublisherSchema
+	local publisher = parentSchema:_Commit() ---@diagnostic disable-line invisible
 	self:_Release()
 	return publisher
 end

@@ -16,9 +16,12 @@ local StringBuilder = LibTSMReactive:From("LibTSMUtil"):IncludeClassType("String
 local Hash = LibTSMReactive:From("LibTSMUtil"):Include("Util.Hash")
 local private = {
 	objectPool = ObjectPool.New("PUBLISHER_CODE_GEN", ReactivePublisherCodeGen, 1),
+	argCommentTemp = {},
 	codeTemp = {},
+	codeIndentation = 0,
 	cache = {}, ---@type table<number,CompiledPublisherObject>
 	stringBuilder = nil,
+	indentationCache = {},
 }
 local MAX_ARG_KEYS = 20
 local STEP = Util.PUBLISHER_STEP
@@ -30,6 +33,10 @@ local ARG_TYPE = EnumType.New("PUBLISHER_ARG_TYPE", {
 	FUNCTION = EnumType.NewValue(),
 	ANY = EnumType.NewValue(),
 	OPTIONAL_ANY = EnumType.NewValue(),
+})
+local SHARE_TYPE = EnumType.New("PUBLISHER_SHARE_TYPE", {
+	START = EnumType.NewValue(),
+	END = EnumType.NewValue(),
 })
 local UNOPTIMIZABLE_STEPS = {
 	[STEP.MAP_WITH_FUNCTION] = true,
@@ -49,17 +56,7 @@ local UNOPTIMIZABLE_STEPS = {
 local OPTIMIZATION_IGNORED_STEPS = {
 	[STEP.IGNORE_NIL] = true,
 	[STEP.PRINT] = true,
-	[STEP.MAP_TO_BOOLEAN] = true,
 	[STEP.INVERT_BOOLEAN] = true,
-}
-local ARG_TYPE_IS_OPTIONAL = {
-	[ARG_TYPE.NUMBER] = false,
-	[ARG_TYPE.STRING] = false,
-	[ARG_TYPE.STRING_OR_NUMBER] = false,
-	[ARG_TYPE.TABLE] = false,
-	[ARG_TYPE.FUNCTION] = false,
-	[ARG_TYPE.ANY] = false,
-	[ARG_TYPE.OPTIONAL_ANY] = true,
 }
 local ARG_TYPE_CHECK_FUNC = {
 	[ARG_TYPE.NUMBER] = function(valueType) return valueType == "number" end,
@@ -70,11 +67,20 @@ local ARG_TYPE_CHECK_FUNC = {
 	[ARG_TYPE.ANY] = function(valueType) return true end,
 	[ARG_TYPE.OPTIONAL_ANY] = function(valueType) return true end,
 }
+local TERMINAL_STEPS = {
+	[STEP.CALL_METHOD] = true,
+	[STEP.CALL_FUNCTION] = true,
+	[STEP.ASSIGN_TO_TABLE_KEY] = true,
+}
 
 ---@class PublisherStepInfo
 ---@field argTypes EnumValue[]?
----@field codeTemplate string
+---@field codeTemplate string?
 ---@field numIgnoreContext number?
+---@field shareType userdata?
+---@field isTerminal boolean
+---@field ignoreOptimization boolean
+---@field isUnoptimizable boolean
 
 
 
@@ -169,8 +175,6 @@ STEP_INFO[STEP.MAP_BOOLEAN_NOT_EQUALS] = { argTypes = { ARG_TYPE.ANY } }
 STEP_INFO[STEP.MAP_BOOLEAN_NOT_EQUALS].codeTemplate = [=[data = data ~= context[%(contextArgIndex)d]]=]
 STEP_INFO[STEP.MAP_BOOLEAN_GREATER_THAN_OR_EQUALS] = { argTypes = { ARG_TYPE.ANY } }
 STEP_INFO[STEP.MAP_BOOLEAN_GREATER_THAN_OR_EQUALS].codeTemplate = [=[data = data >= context[%(contextArgIndex)d]]=]
-STEP_INFO[STEP.MAP_TO_BOOLEAN] = { argTypes = {} }
-STEP_INFO[STEP.MAP_TO_BOOLEAN].codeTemplate = [=[data = data and true or false]=]
 STEP_INFO[STEP.MAP_STRING_FORMAT] = { argTypes = { ARG_TYPE.STRING } }
 STEP_INFO[STEP.MAP_STRING_FORMAT].codeTemplate = [=[data = format(context[%(contextArgIndex)d], data)]=]
 STEP_INFO[STEP.MAP_STRING_ADD_SUFFIX] = { argTypes = { ARG_TYPE.STRING } }
@@ -260,7 +264,8 @@ STEP_INFO[STEP.IGNORE_DUPLICATES_WITH_METHOD].codeTemplate =
     context[-%(ignoreIndex)d] = hash
   end
 end]=]
-STEP_INFO[STEP.SHARE] = { argTypes = {} } -- Share steps are handled specially
+STEP_INFO[STEP.SHARE] = { argTypes = {}, shareType = SHARE_TYPE.START }
+STEP_INFO[STEP.END_SHARE] = { argTypes = {}, shareType = SHARE_TYPE.END }
 STEP_INFO[STEP.PRINT] = { argTypes = { ARG_TYPE.OPTIONAL_ANY } }
 STEP_INFO[STEP.PRINT].codeTemplate =
 [=[do
@@ -289,6 +294,13 @@ STEP_INFO[STEP.CALL_FUNCTION] = { argTypes = { ARG_TYPE.FUNCTION } }
 STEP_INFO[STEP.CALL_FUNCTION].codeTemplate = [=[context[%(contextArgIndex)d](data)]=]
 STEP_INFO[STEP.ASSIGN_TO_TABLE_KEY] = { argTypes = { ARG_TYPE.TABLE, ARG_TYPE.STRING } }
 STEP_INFO[STEP.ASSIGN_TO_TABLE_KEY].codeTemplate = [=[context[%(contextArgIndex)d][context[%(contextArgIndex)d + 1]] = data]=]
+do
+	for stepType, info in pairs(STEP_INFO) do
+		info.isTerminal = TERMINAL_STEPS[stepType] or false
+		info.ignoreOptimization = OPTIMIZATION_IGNORED_STEPS[stepType] or info.isTerminal
+		info.isUnoptimizable = UNOPTIMIZABLE_STEPS[stepType] or false
+	end
+end
 ---@diagnostic enable: missing-fields
 
 
@@ -314,12 +326,11 @@ function ReactivePublisherCodeGen.__private:__init()
 	self._hash = nil
 	self._steps = {} ---@type PublisherStepInfo[]
 	self._args = {}
+	self._comment = {}
 	self._firstArgIndex = {}
 	self._totalNumArgs = 0
 	self._firstIgnoreVarIndex = {}
 	self._totalNumIgnoreVars = 0
-	self._shareStep = nil
-	self._shareEndSteps = {}
 	self._compiledExpressionCode = {}
 	self._optimizeResult = nil
 	self._optimizeKeys = {}
@@ -329,12 +340,11 @@ function ReactivePublisherCodeGen.__private:_Release()
 	self._hash = nil
 	wipe(self._steps)
 	Table.WipeAndDeallocate(self._args)
+	Table.WipeAndDeallocate(self._comment)
 	wipe(self._firstArgIndex)
 	self._totalNumArgs = 0
 	wipe(self._firstIgnoreVarIndex)
 	self._totalNumIgnoreVars = 0
-	self._shareStep = nil
-	wipe(self._shareEndSteps)
 	wipe(self._compiledExpressionCode)
 	self._optimizeResult = nil
 	Table.WipeAndDeallocate(self._optimizeKeys)
@@ -361,22 +371,27 @@ function ReactivePublisherCodeGen:AddStep(stepType, ...)
 	self._hash = Hash.Calculate(tostring(stepType), self._hash)
 	local stepNum = #self._steps
 
-	-- Handle share specially
-	if stepType == STEP.SHARE then
-		assert(not self._shareStep and stepNum > 1)
-		self._shareStep = stepNum
+	-- Handle share steps specially
+	if info.shareType then
+		if info.shareType == SHARE_TYPE.START then
+			-- Can't have a start share step right after another share step
+			assert(not self._steps[stepNum - 1].shareType)
+		end
 		if self._optimizeResult == nil then
 			self._optimizeResult = false
 			wipe(self._optimizeKeys)
 		end
+		self:_AddComment(stepType, "")
 		return
 	end
 
 	-- Process the args
 	if stepType == STEP.MAP_WITH_FUNCTION_AND_KEYS then
 		assert(numArgs > 1 and numArgs <= MAX_ARG_KEYS + 1)
+		assert(#private.argCommentTemp == 0)
 		local func = ...
 		assert(type(func) == "function")
+		tinsert(private.argCommentTemp, tostring(func))
 		numArgs = numArgs - 1
 		self:_AddArg(func)
 		self:_AddArg(numArgs)
@@ -384,20 +399,27 @@ function ReactivePublisherCodeGen:AddStep(stepType, ...)
 			local key = select(i + 1, ...)
 			assert(type(key) == "string")
 			self:_AddArg(key)
+			tinsert(private.argCommentTemp, "\""..key.."\"")
 		end
+		self:_AddComment(stepType, table.concat(private.argCommentTemp, ","))
+		wipe(private.argCommentTemp)
 		-- Add placeholder args for the current values
 		self._totalNumArgs = self._totalNumArgs + numArgs
 		-- Add placeholder args so that the total number is always the same
 		self._totalNumArgs = self._totalNumArgs + (MAX_ARG_KEYS - numArgs) * 2
 	elseif stepType == STEP.IGNORE_DUPLICATES_WITH_KEYS then
 		assert(numArgs > 0 and numArgs <= MAX_ARG_KEYS)
+		assert(#private.argCommentTemp == 0)
 		self:_AddArg(numArgs)
 		for i = 1, numArgs do
 			local key = select(i, ...)
 			assert(type(key) == "string")
 			self:_AddIgnoreVar()
 			self:_AddArg(key)
+			tinsert(private.argCommentTemp, "\""..key.."\"")
 		end
+		self:_AddComment(stepType, table.concat(private.argCommentTemp, ","))
+		wipe(private.argCommentTemp)
 		-- Add placeholder args and ignore vars so that the total number is always the same
 		self._totalNumArgs = self._totalNumArgs + MAX_ARG_KEYS - numArgs
 		self._totalNumIgnoreVars = self._totalNumIgnoreVars + MAX_ARG_KEYS - numArgs
@@ -409,23 +431,32 @@ function ReactivePublisherCodeGen:AddStep(stepType, ...)
 		self._hash = Hash.Calculate(code, self._hash)
 		self._compiledExpressionCode[stepNum] = gsub(code, "\n", "\n  ")
 		self:_AddArg(expression:GetContext())
+		self:_AddComment(stepType, "[["..expression:GetOriginalExpression().."]]")
 	else
 		assert(numArgs <= #info.argTypes)
+		assert(#private.argCommentTemp == 0)
 		for i, argType in ipairs(info.argTypes) do
 			local arg = select(i, ...)
-			assert(ARG_TYPE_IS_OPTIONAL[argType] or numArgs >= i)
-			assert(ARG_TYPE_CHECK_FUNC[argType](type(arg)))
+			local passedArgType = type(arg)
+			assert(ARG_TYPE_CHECK_FUNC[argType](passedArgType))
+			if passedArgType == "string" then
+				tinsert(private.argCommentTemp, "\""..arg.."\"")
+			elseif passedArgType == "number" or passedArgType == "boolean" then
+				tinsert(private.argCommentTemp, tostring(arg))
+			elseif i < numArgs and passedArgType == "nil" then
+				tinsert(private.argCommentTemp, "nil")
+			elseif i < numArgs or (i == numArgs and passedArgType ~= "nil") then
+				tinsert(private.argCommentTemp, "<"..tostring(arg)..">")
+			end
 			self:_AddArg(arg)
 		end
+		self:_AddComment(stepType, table.concat(private.argCommentTemp, ","))
+		wipe(private.argCommentTemp)
 		if info.numIgnoreContext then
 			assert(info.numIgnoreContext >= 1)
 			self._firstIgnoreVarIndex[stepNum] = self._totalNumIgnoreVars + 1
 			self._totalNumIgnoreVars = self._totalNumIgnoreVars + info.numIgnoreContext
 		end
-	end
-
-	if self._shareStep and Util.IsTerminalStep(stepType) then
-		tinsert(self._shareEndSteps, stepNum)
 	end
 
 	-- Update the optimization info
@@ -444,9 +475,9 @@ function ReactivePublisherCodeGen:AddStep(stepType, ...)
 				self._optimizeKeys[key] = true
 			end
 			self._optimizeResult = true
-		elseif Util.IsTerminalStep(stepType) or OPTIMIZATION_IGNORED_STEPS[stepType] then
+		elseif info.isTerminal or info.ignoreOptimization then
 			-- Ignore these steps for optimizations
-		elseif UNOPTIMIZABLE_STEPS[stepType] then
+		elseif info.isUnoptimizable then
 			-- Not able to optimize
 			self._optimizeResult = false
 			wipe(self._optimizeKeys)
@@ -476,6 +507,14 @@ end
 -- Private Class Methods
 -- ============================================================================
 
+function ReactivePublisherCodeGen.__private:_AddComment(stepType, argsStr)
+	local stepNum = #self._steps
+	local stepName = strmatch(tostring(stepType), "^PUBLISHER_STEP%.(.+)$")
+	stepName = gsub(stepName, "([^_]+)", private.UpperCamelCaseHelper)
+	stepName = gsub(stepName, "_", "")
+	self._comment[stepNum] = format("%s(%s)", stepName, argsStr)
+end
+
 function ReactivePublisherCodeGen.__private:_AddArg(arg)
 	local stepNum = #self._steps
 	local argIndex = self._totalNumArgs + 1
@@ -503,31 +542,41 @@ function ReactivePublisherCodeGen.__private:_GetResetFunctionCode()
 end
 
 function ReactivePublisherCodeGen.__private:_GetMainFunctionCode()
-	assert(not next(private.codeTemp))
-	tinsert(private.codeTemp, "repeat")
-	if self._shareStep then
-		for i = 1, self._shareStep - 1 do
-			tinsert(private.codeTemp, "  "..gsub(self:_CompileStep(i), "\n  ", "\n    "))
+	assert(not next(private.codeTemp) and private.codeIndentation == 0)
+	private.InsertBlockStartCode()
+	local numSteps = #self._steps
+	local shareDepth = 0
+	for stepNum, info in ipairs(self._steps) do
+		private.InsertIndentedCode("-- "..self._comment[stepNum])
+		local endSharedDataBlock = false
+		if info.shareType == SHARE_TYPE.START then
+			private.InsertShareBlockStart()
+			private.InsertSharedDataBlockStart()
+			shareDepth = shareDepth + 1
+		elseif info.shareType == SHARE_TYPE.END then
+			private.InsertBlockEndCode()
+			shareDepth = shareDepth - 1
+			assert(shareDepth ~= 0 or stepNum == numSteps)
+			endSharedDataBlock = shareDepth > 0
+		else
+			assert(not info.shareType)
+			self:_CompileStep(stepNum)
+			endSharedDataBlock = info.isTerminal and shareDepth > 0
 		end
-		tinsert(private.codeTemp, "  local shareData = data")
-		local shareStartStep = self._shareStep + 1
-		for _, shareEndStep in ipairs(self._shareEndSteps) do
-			tinsert(private.codeTemp, "  repeat")
-			-- Intentionally shadowing the outter `data` variable
-			tinsert(private.codeTemp, "    local data = shareData")
-			for i = shareStartStep, shareEndStep do
-				tinsert(private.codeTemp, "    "..gsub(self:_CompileStep(i), "\n  ", "\n      "))
+		if endSharedDataBlock then
+			-- End the current shared data block
+			private.InsertIndentedCode("-- End shared data block")
+			private.InsertBlockEndCode()
+			assert(stepNum < numSteps)
+			if self._steps[stepNum + 1].shareType ~= SHARE_TYPE.END then
+				private.InsertSharedDataBlockStart()
 			end
-			tinsert(private.codeTemp, "  until true")
-			shareStartStep = shareEndStep + 1
-		end
-	else
-		for i = 1, #self._steps do
-			tinsert(private.codeTemp, "  "..gsub(self:_CompileStep(i), "\n  ", "\n    "))
 		end
 	end
-	tinsert(private.codeTemp, "until true")
+	assert(shareDepth == 0)
+	private.InsertBlockEndCode()
 	local code = format(MAIN_CODE_TEMPLATE, table.concat(private.codeTemp, "\n  "))
+	assert(private.codeIndentation == 0)
 	wipe(private.codeTemp)
 	return code
 end
@@ -535,6 +584,7 @@ end
 function ReactivePublisherCodeGen.__private:_CompileStep(stepNum)
 	private.stringBuilder = private.stringBuilder or StringBuilder.Create()
 	local info = self._steps[stepNum]
+	assert(info.codeTemplate)
 	private.stringBuilder:SetTemplate(info.codeTemplate)
 	local compiledExpressionCode = self._compiledExpressionCode[stepNum]
 	if compiledExpressionCode then
@@ -553,6 +603,53 @@ function ReactivePublisherCodeGen.__private:_CompileStep(stepNum)
 		private.stringBuilder:SetParam("ignoreIndex", firstIgnoreVarIndex)
 		assert(private.stringBuilder:GetParamCount("ignoreIndex") > 0)
 	end
-	local expression = gsub(private.stringBuilder:Commit(), "\n", "\n  ")
-	return expression
+	private.InsertIndentedCode(private.FixIndentation(private.stringBuilder:Commit(), private.codeIndentation + 1))
+end
+
+
+
+-- ============================================================================
+-- Private Helper Functions
+-- ============================================================================
+
+function private.UpperCamelCaseHelper(part)
+	return strsub(part, 1, 1)..strlower(strsub(part, 2))
+end
+
+function private.InsertBlockStartCode()
+	private.InsertIndentedCode("repeat")
+	private.codeIndentation = private.codeIndentation + 1
+end
+
+function private.InsertBlockEndCode()
+	private.codeIndentation = private.codeIndentation - 1
+	private.InsertIndentedCode("until true")
+end
+
+function private.InsertShareBlockStart()
+	private.InsertBlockStartCode()
+	-- Intentionally shadowing the outer `shareData` variable
+	private.InsertIndentedCode("local shareData = data")
+end
+
+function private.InsertSharedDataBlockStart()
+	private.InsertIndentedCode("-- New shared data block")
+	private.InsertBlockStartCode()
+	-- Intentionally shadowing the outer `data` variable
+	private.InsertIndentedCode("local data = shareData")
+end
+
+function private.InsertIndentedCode(code)
+	assert(private.codeIndentation >= 0)
+	tinsert(private.codeTemp, private.GetIndentation(private.codeIndentation)..code)
+end
+
+function private.FixIndentation(code, indentationLevel)
+	code = gsub(code, "\n", "\n"..private.GetIndentation(indentationLevel))
+	return code
+end
+
+function private.GetIndentation(level)
+	private.indentationCache[level] = private.indentationCache[level] or strrep("  ", level)
+	return private.indentationCache[level]
 end

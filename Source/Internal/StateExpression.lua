@@ -59,6 +59,7 @@ function ReactiveStateExpression.__private:__init(expressionStr, schema)
 	self._context = { __ignore = IGNORE_VALUE }
 	self._keys = {}
 	self._stringId = 1
+	self._origExpression = expressionStr
 	self:_Compile(expressionStr)
 end
 
@@ -67,6 +68,12 @@ end
 -- ============================================================================
 -- Public Class Methods
 -- ============================================================================
+
+---Gets the original expression.
+---@return table
+function ReactiveStateExpression:GetOriginalExpression()
+	return self._origExpression
+end
 
 ---Returns the single key or nil if there are multiple keys.
 ---@return string|nil
