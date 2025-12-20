@@ -91,7 +91,6 @@ end
 -- ============================================================================
 
 function ReactivePublisherSchemaShared.__protected:_AddStepHelper(stepType, ...)
-	assert(self._codeGen)
 	self._codeGen:AddStep(stepType, ...)
 	return self
 end

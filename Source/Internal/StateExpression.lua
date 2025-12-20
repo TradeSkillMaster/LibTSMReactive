@@ -11,6 +11,7 @@ local String = LibTSMReactive:From("LibTSMUtil"):Include("Lua.String")
 local Table = LibTSMReactive:From("LibTSMUtil"):Include("Lua.Table")
 local private = {
 	cache = {}, ---@type table<ReactiveStateSchema,table<string,ReactiveStateExpression>>
+	stringsTemp = {},
 }
 local VALID_OPERATORS = {
 	["or"] = true,
@@ -56,9 +57,9 @@ end
 
 function ReactiveStateExpression.__private:__init(expressionStr, schema)
 	self._schema = schema
-	self._context = { __ignore = IGNORE_VALUE }
+	self._context = {}
+	self._context.__ignore = IGNORE_VALUE
 	self._keys = {}
-	self._stringId = 1
 	self._origExpression = expressionStr
 	self:_Compile(expressionStr)
 end
@@ -111,6 +112,8 @@ end
 function ReactiveStateExpression.__private:_Compile(expression)
 	assert(not strmatch(expression, "__context"))
 	assert(not strmatch(expression, "__ignore"))
+	assert(not strmatch(expression, "__string"))
+	assert(#private.stringsTemp == 0)
 
 	-- Replace EnumEquals() function calls, Ignore() function calls, and string literals
 	expression = gsub(expression, "EnumEquals%((.-),(.-)%)", self:__closure("_EnumEqualsSub"))
@@ -130,6 +133,10 @@ function ReactiveStateExpression.__private:_Compile(expression)
 	if numIgnore > 0 then
 		expression = expression.."\n".."if data == __context.__ignore then break end"
 	end
+	for i, str in ipairs(private.stringsTemp) do
+		expression = gsub(expression, "__string_"..i, "\""..str.."\"")
+	end
+	wipe(private.stringsTemp)
 	self._code = expression
 end
 
@@ -140,6 +147,8 @@ function ReactiveStateExpression.__private:_HandleToken(key)
 	elseif VALID_OPERATORS[key] or VALID_FUNCTIONS[key] then
 		-- Valid operator or function
 		return key
+	elseif strmatch(key, "^__string_%d+$") then
+		-- String placeholder - pass
 	else
 		local contextKey = strmatch(key, "^[^%.]+")
 		if self._context[contextKey] then
@@ -181,9 +190,6 @@ function ReactiveStateExpression.__private:_StringLiteralSub(origToken, str)
 		-- Don't need to replace this
 		return origToken
 	end
-	self._stringId = self._stringId + 1
-	local contextKey = "__string_"..(self._stringId)
-	assert(not self._context[contextKey])
-	self._context[contextKey] = str
-	return contextKey
+	tinsert(private.stringsTemp, str)
+	return "__string_"..#private.stringsTemp
 end
