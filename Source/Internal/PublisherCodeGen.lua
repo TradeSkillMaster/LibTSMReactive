@@ -23,7 +23,7 @@ local private = {
 	stringBuilder = nil,
 	indentationCache = {},
 }
-local MAX_ARG_KEYS = 20
+local MAX_VARARG_ARGS = 20
 local STEP = Util.PUBLISHER_STEP
 local ARG_TYPE = EnumType.New("PUBLISHER_ARG_TYPE", {
 	NUMBER = EnumType.NewValue(),
@@ -33,6 +33,8 @@ local ARG_TYPE = EnumType.New("PUBLISHER_ARG_TYPE", {
 	FUNCTION = EnumType.NewValue(),
 	ANY = EnumType.NewValue(),
 	OPTIONAL_ANY = EnumType.NewValue(),
+	VARARG_STRING = EnumType.NewValue(),
+	STATE_EXPRESSION = EnumType.NewValue(),
 })
 local SHARE_TYPE = EnumType.New("PUBLISHER_SHARE_TYPE", {
 	START = EnumType.NewValue(),
@@ -66,6 +68,7 @@ local ARG_TYPE_CHECK_FUNC = {
 	[ARG_TYPE.FUNCTION] = function(valueType) return valueType == "function" end,
 	[ARG_TYPE.ANY] = function(valueType) return true end,
 	[ARG_TYPE.OPTIONAL_ANY] = function(valueType) return true end,
+	[ARG_TYPE.STATE_EXPRESSION] = function(valueType) return valueType == "table" end,
 }
 local TERMINAL_STEPS = {
 	[STEP.CALL_METHOD] = true,
@@ -74,9 +77,10 @@ local TERMINAL_STEPS = {
 }
 
 ---@class PublisherStepInfo
----@field argTypes EnumValue[]?
+---@field argTypes EnumValue[]
 ---@field codeTemplate string?
 ---@field numIgnoreContext number?
+---@field numExtraContextArgs number?
 ---@field shareType userdata?
 ---@field isTerminal boolean
 ---@field ignoreOptimization boolean
@@ -133,7 +137,7 @@ end]=]
 local STEP_INFO = {} ---@type table<EnumValue,PublisherStepInfo>
 STEP_INFO[STEP.MAP_WITH_FUNCTION] = { argTypes = { ARG_TYPE.FUNCTION, ARG_TYPE.OPTIONAL_ANY } }
 STEP_INFO[STEP.MAP_WITH_FUNCTION].codeTemplate = [=[data = context[%(contextArgIndex)d](data, context[%(contextArgIndex)d + 1])]=]
-STEP_INFO[STEP.MAP_WITH_FUNCTION_AND_KEYS] = {} -- Args are handled specially
+STEP_INFO[STEP.MAP_WITH_FUNCTION_AND_KEYS] = { argTypes = { ARG_TYPE.FUNCTION, ARG_TYPE.VARARG_STRING }, numExtraContextArgs = MAX_VARARG_ARGS }
 STEP_INFO[STEP.MAP_WITH_FUNCTION_AND_KEYS].codeTemplate = [=[do
   local keyOffset = %(contextArgIndex)d + 1
   local numArgs = context[keyOffset]
@@ -158,7 +162,7 @@ STEP_INFO[STEP.MAP_WITH_KEY_COALESCED].codeTemplate =
 end]=]
 STEP_INFO[STEP.MAP_WITH_LOOKUP_TABLE] = { argTypes = { ARG_TYPE.TABLE } }
 STEP_INFO[STEP.MAP_WITH_LOOKUP_TABLE].codeTemplate = [=[data = context[%(contextArgIndex)d][data]]=]
-STEP_INFO[STEP.MAP_WITH_STATE_EXPRESSION] = {} -- Args are handled specially
+STEP_INFO[STEP.MAP_WITH_STATE_EXPRESSION] = { argTypes = { ARG_TYPE.STATE_EXPRESSION } }
 STEP_INFO[STEP.MAP_WITH_STATE_EXPRESSION].codeTemplate = [=[do
   %(compiledExpressionCode)s
 end]=]
@@ -239,7 +243,7 @@ STEP_INFO[STEP.IGNORE_DUPLICATES].codeTemplate =
   break
 end
 context[-%(ignoreIndex)d] = data]=]
-STEP_INFO[STEP.IGNORE_DUPLICATES_WITH_KEYS] = {} -- Args are handled specially
+STEP_INFO[STEP.IGNORE_DUPLICATES_WITH_KEYS] = { argTypes = { ARG_TYPE.VARARG_STRING }, numIgnoreContext = -1 }
 STEP_INFO[STEP.IGNORE_DUPLICATES_WITH_KEYS].codeTemplate =
 [=[do
   local isEqual = true
@@ -299,6 +303,11 @@ do
 		info.isTerminal = TERMINAL_STEPS[stepType] or false
 		info.ignoreOptimization = OPTIMIZATION_IGNORED_STEPS[stepType] or info.isTerminal
 		info.isUnoptimizable = UNOPTIMIZABLE_STEPS[stepType] or false
+		for i, argType in ipairs(info.argTypes) do
+			if argType == ARG_TYPE.VARARG_STRING or argType == ARG_TYPE.STATE_EXPRESSION then
+				assert(i == #info.argTypes)
+			end
+		end
 	end
 end
 ---@diagnostic enable: missing-fields
@@ -386,72 +395,42 @@ function ReactivePublisherCodeGen:AddStep(stepType, ...)
 	end
 
 	-- Process the args
-	if stepType == STEP.MAP_WITH_FUNCTION_AND_KEYS then
-		assert(numArgs > 1 and numArgs <= MAX_ARG_KEYS + 1)
-		assert(#private.argCommentTemp == 0)
-		local func = ...
-		assert(type(func) == "function")
-		tinsert(private.argCommentTemp, tostring(func))
-		numArgs = numArgs - 1
-		self:_AddArg(func)
-		self:_AddArg(numArgs)
-		for i = 1, numArgs do
-			local key = select(i + 1, ...)
-			assert(type(key) == "string")
-			self:_AddArg(key)
-			tinsert(private.argCommentTemp, "\""..key.."\"")
+	local numVarargArgs = 0
+	assert(#private.argCommentTemp == 0)
+	for i, argType in ipairs(info.argTypes) do
+		if argType == ARG_TYPE.VARARG_STRING then
+			numVarargArgs = numArgs - i + 1
+			assert(numVarargArgs > 0 and numVarargArgs <= MAX_VARARG_ARGS)
+			self:_AddArg(numVarargArgs)
+			for j = i, numArgs do
+				local key = select(j, ...)
+				self:_AddTypedArg(key, ARG_TYPE.STRING)
+				if info.numIgnoreContext then
+					self:_AddIgnoreVar()
+				end
+			end
+		else
+			local arg = select(i, ...)
+			self:_AddTypedArg(arg, argType, i, numArgs)
 		end
-		self:_AddComment(stepType, table.concat(private.argCommentTemp, ","))
-		wipe(private.argCommentTemp)
-		-- Add placeholder args for the current values
-		self._totalNumArgs = self._totalNumArgs + numArgs
-		-- Add placeholder args so that the total number is always the same
-		self._totalNumArgs = self._totalNumArgs + (MAX_ARG_KEYS - numArgs) * 2
-	elseif stepType == STEP.IGNORE_DUPLICATES_WITH_KEYS then
-		assert(numArgs > 0 and numArgs <= MAX_ARG_KEYS)
-		assert(#private.argCommentTemp == 0)
-		self:_AddArg(numArgs)
-		for i = 1, numArgs do
-			local key = select(i, ...)
-			assert(type(key) == "string")
-			self:_AddIgnoreVar()
-			self:_AddArg(key)
-			tinsert(private.argCommentTemp, "\""..key.."\"")
+	end
+	self:_AddComment(stepType, table.concat(private.argCommentTemp, ","))
+	wipe(private.argCommentTemp)
+	if info.numExtraContextArgs then
+		assert(self._firstArgIndex[stepNum])
+		self._totalNumArgs = self._totalNumArgs + info.numExtraContextArgs
+	end
+	if numVarargArgs > 0 then
+		if info.numIgnoreContext == -1 then
+			-- Add placeholder ignore vars so that the total number is always the same
+			self._totalNumIgnoreVars = self._totalNumIgnoreVars + MAX_VARARG_ARGS - numVarargArgs
+		else
+			assert(not info.numIgnoreContext)
 		end
-		self:_AddComment(stepType, table.concat(private.argCommentTemp, ","))
-		wipe(private.argCommentTemp)
-		-- Add placeholder args and ignore vars so that the total number is always the same
-		self._totalNumArgs = self._totalNumArgs + MAX_ARG_KEYS - numArgs
-		self._totalNumIgnoreVars = self._totalNumIgnoreVars + MAX_ARG_KEYS - numArgs
-	elseif stepType == STEP.MAP_WITH_STATE_EXPRESSION then
-		assert(numArgs == 1)
-		local expression = ... ---@type ReactiveStateExpression
-		local code = expression:GetCode()
-		-- Add the code to our hash
-		self._hash = Hash.Calculate(code, self._hash)
-		self._compiledExpressionCode[stepNum] = gsub(code, "\n", "\n  ")
-		self:_AddArg(expression:GetContext())
-		self:_AddComment(stepType, "[["..expression:GetOriginalExpression().."]]")
+		-- Add placeholder args for the unused vararg slots so that the total number of arguments is always the same
+		self._totalNumArgs = self._totalNumArgs + MAX_VARARG_ARGS - numVarargArgs
 	else
 		assert(numArgs <= #info.argTypes)
-		assert(#private.argCommentTemp == 0)
-		for i, argType in ipairs(info.argTypes) do
-			local arg = select(i, ...)
-			local passedArgType = type(arg)
-			assert(ARG_TYPE_CHECK_FUNC[argType](passedArgType))
-			if passedArgType == "string" then
-				tinsert(private.argCommentTemp, "\""..arg.."\"")
-			elseif passedArgType == "number" or passedArgType == "boolean" then
-				tinsert(private.argCommentTemp, tostring(arg))
-			elseif i < numArgs and passedArgType == "nil" then
-				tinsert(private.argCommentTemp, "nil")
-			elseif i < numArgs or (i == numArgs and passedArgType ~= "nil") then
-				tinsert(private.argCommentTemp, "<"..tostring(arg)..">")
-			end
-			self:_AddArg(arg)
-		end
-		self:_AddComment(stepType, table.concat(private.argCommentTemp, ","))
-		wipe(private.argCommentTemp)
 		if info.numIgnoreContext then
 			assert(info.numIgnoreContext >= 1)
 			self._firstIgnoreVarIndex[stepNum] = self._totalNumIgnoreVars + 1
@@ -513,6 +492,29 @@ function ReactivePublisherCodeGen.__private:_AddComment(stepType, argsStr)
 	stepName = gsub(stepName, "([^_]+)", private.UpperCamelCaseHelper)
 	stepName = gsub(stepName, "_", "")
 	self._comment[stepNum] = format("%s(%s)", stepName, argsStr)
+end
+
+function ReactivePublisherCodeGen.__private:_AddTypedArg(arg, argType, argNum, numArgs)
+	local passedArgType = type(arg)
+	assert(ARG_TYPE_CHECK_FUNC[argType](passedArgType))
+	if argType == ARG_TYPE.STATE_EXPRESSION then
+		local expression = arg --[[@as ReactiveStateExpression]]
+		local code = expression:GetCode()
+		-- Add the code to our hash
+		self._hash = Hash.Calculate(code, self._hash)
+		self._compiledExpressionCode[#self._steps] = gsub(code, "\n", "\n  ")
+		tinsert(private.argCommentTemp, "[["..expression:GetOriginalExpression().."]]")
+		arg = expression:GetContext()
+	elseif passedArgType == "string" then
+		tinsert(private.argCommentTemp, "\""..arg.."\"")
+	elseif passedArgType == "number" or passedArgType == "boolean" then
+		tinsert(private.argCommentTemp, tostring(arg))
+	elseif argNum < numArgs and passedArgType == "nil" then
+		tinsert(private.argCommentTemp, "nil")
+	elseif argNum < numArgs or (argNum == numArgs and passedArgType ~= "nil") then
+		tinsert(private.argCommentTemp, "<"..tostring(arg)..">")
+	end
+	self:_AddArg(arg)
 end
 
 function ReactivePublisherCodeGen.__private:_AddArg(arg)
