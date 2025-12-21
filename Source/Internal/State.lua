@@ -51,22 +51,29 @@ function STATE_METHODS:Publisher(expressionStr)
 		return self:_GetPublisher()
 			:MapWithKey(expressionStr)
 			:IgnoreDuplicates()
-	else
-		-- An expression
-		return self:_GetPublisherForExpressionHelper(expressionStr)
 	end
-end
 
----Creates a new publisher for a specific key of the state.
----@param key string The key to create a publisher for (ignoring duplicate values)
----@return ReactivePublisherSchema
-function STATE_METHODS:PublisherForKeyChange(key)
-	local context = private.stateContext[self]
-	if not context.schema:_HasKey(key) then ---@diagnostic disable-line: invisible
-		error("Unknown state key: "..tostring(key), 2)
+	local expression = Expression.Get(expressionStr, context.schema)
+	local singleKey = expression:GetSingleKey()
+	local publisher = self:_GetPublisher()
+	if singleKey then
+		if not context.schema:_HasKey(singleKey) then ---@diagnostic disable-line: invisible
+			error("Unknown state key: "..tostring(singleKey), 2)
+		end
+		publisher:MapWithKey(singleKey)
+		publisher:IgnoreDuplicates()
+	else
+		assert(not next(private.keysTemp))
+		for key in expression:KeyIterator() do
+			if not context.schema:_HasKey(key) then ---@diagnostic disable-line: invisible
+				error("Unknown state key: "..tostring(key), 2)
+			end
+			tinsert(private.keysTemp, key)
+		end
+		publisher:IgnoreDuplicatesWithKeys(Table.UnpackAndWipe(private.keysTemp))
 	end
-	return self:_GetPublisher()
-		:MapWithKey(key)
+	return publisher
+		:_MapWithStateExpression(expression) ---@diagnostic disable-line invisible
 		:IgnoreDuplicates()
 end
 
@@ -112,13 +119,6 @@ function STATE_METHODS:PublisherForFunctionWithKeys(func, ...)
 			:MapWithFunctionAndKeys(func, ...)
 			:IgnoreDuplicates()
 	end
-end
-
----Creates a publisher for an expression which operates on state fields.
----@param expressionStr string A valid lua expression which can only access fields of the state (as globals)
----@return ReactivePublisherSchema
-function STATE_METHODS:PublisherForExpression(expressionStr)
-	return self:_GetPublisherForExpressionHelper(expressionStr)
 end
 
 ---Sets whether or not new publishers which are added should be deferred and handled as late as possible.
@@ -190,34 +190,6 @@ function STATE_METHODS:_GetPublisher()
 		schema:_AutoDisable() ---@diagnostic disable-line invisible
 	end
 	return schema
-end
-
----@private
----@return ReactivePublisherSchema
-function STATE_METHODS:_GetPublisherForExpressionHelper(expressionStr)
-	local context = private.stateContext[self]
-	local expression = Expression.Get(expressionStr, context.schema)
-	local singleKey = expression:GetSingleKey()
-	local publisher = self:_GetPublisher()
-	if singleKey then
-		if not context.schema:_HasKey(singleKey) then ---@diagnostic disable-line: invisible
-			error("Unknown state key: "..tostring(singleKey), 3)
-		end
-		publisher:MapWithKey(singleKey)
-		publisher:IgnoreDuplicates()
-	else
-		assert(not next(private.keysTemp))
-		for key in expression:KeyIterator() do
-			if not context.schema:_HasKey(key) then ---@diagnostic disable-line: invisible
-				error("Unknown state key: "..tostring(key), 3)
-			end
-			tinsert(private.keysTemp, key)
-		end
-		publisher:IgnoreDuplicatesWithKeys(Table.UnpackAndWipe(private.keysTemp))
-	end
-	return publisher
-		:_MapWithStateExpression(expression) ---@diagnostic disable-line invisible
-		:IgnoreDuplicates()
 end
 
 ---@private

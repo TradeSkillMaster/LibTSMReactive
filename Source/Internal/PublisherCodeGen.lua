@@ -184,10 +184,6 @@ STEP_INFO[STEP.MAP_BOOLEAN_LESS_THAN] = { argTypes = { ARG_TYPE.ANY } }
 STEP_INFO[STEP.MAP_BOOLEAN_LESS_THAN].codeTemplate = [=[data = data < context[%(contextArgIndex)d]]=]
 STEP_INFO[STEP.MAP_STRING_FORMAT] = { argTypes = { ARG_TYPE.STRING } }
 STEP_INFO[STEP.MAP_STRING_FORMAT].codeTemplate = [=[data = format(context[%(contextArgIndex)d], data)]=]
-STEP_INFO[STEP.MAP_STRING_ADD_SUFFIX] = { argTypes = { ARG_TYPE.STRING } }
-STEP_INFO[STEP.MAP_STRING_ADD_SUFFIX].codeTemplate = [=[data = data..context[%(contextArgIndex)d]]=]
-STEP_INFO[STEP.MAP_STRING_ADD_PREFIX] = { argTypes = { ARG_TYPE.STRING } }
-STEP_INFO[STEP.MAP_STRING_ADD_PREFIX].codeTemplate = [=[data = context[%(contextArgIndex)d]..data]=]
 STEP_INFO[STEP.MAP_TO_VALUE] = { argTypes = { ARG_TYPE.ANY } }
 STEP_INFO[STEP.MAP_TO_VALUE].codeTemplate = [=[data = context[%(contextArgIndex)d]]=]
 STEP_INFO[STEP.MAP_NIL_TO_VALUE] = { argTypes = { ARG_TYPE.ANY } }
