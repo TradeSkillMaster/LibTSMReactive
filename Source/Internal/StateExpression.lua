@@ -27,7 +27,6 @@ local VALID_FUNCTIONS = {
 	min = true,
 	max = true,
 }
-local IGNORE_VALUE = newproxy(false)
 
 
 
@@ -58,7 +57,6 @@ end
 function ReactiveStateExpression.__private:__init(expressionStr, schema)
 	self._schema = schema
 	self._context = {}
-	self._context.__ignore = IGNORE_VALUE
 	self._keys = {}
 	self._origExpression = expressionStr
 	self:_Compile(expressionStr)
@@ -111,14 +109,11 @@ end
 
 function ReactiveStateExpression.__private:_Compile(expression)
 	assert(not strmatch(expression, "__context"))
-	assert(not strmatch(expression, "__ignore"))
 	assert(not strmatch(expression, "__string"))
 	assert(#private.stringsTemp == 0)
 
-	-- Replace EnumEquals() function calls, Ignore() function calls, and string literals
+	-- Replace EnumEquals() function calls and string literals
 	expression = gsub(expression, "EnumEquals%((.-),(.-)%)", self:__closure("_EnumEqualsSub"))
-	local numIgnore = nil
-	expression, numIgnore = gsub(expression, "Ignore%(%)", "__ignore")
 	expression = gsub(expression, "(\"(.-)\")", self:__closure("_StringLiteralSub"))
 
 	-- Process all the tokens
@@ -130,9 +125,6 @@ function ReactiveStateExpression.__private:_Compile(expression)
 		expression = gsub(expression, "data%."..String.Escape(singleKey), "data")
 	end
 	expression = "local __context = context[%(contextArgIndex)d]\ndata = "..expression
-	if numIgnore > 0 then
-		expression = expression.."\n".."if data == __context.__ignore then break end"
-	end
 	for i, str in ipairs(private.stringsTemp) do
 		expression = gsub(expression, "__string_"..i, "\""..str.."\"")
 	end

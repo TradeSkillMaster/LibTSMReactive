@@ -229,59 +229,6 @@ function TestState:TestShare()
 	assertEquals(publishedValues2, {1, 2, 3})
 end
 
-function TestState:TestNestedShare()
-	local state = Reactive.CreateStateSchema("TEST_NESTED_SHARE")
-		:AddStringField("str", "INITIAL")
-		:Commit()
-		:CreateState()
-		:SetAutoStore(private.cancellables)
-
-	local function GetInsertValueFunc(tbl)
-		return function(value) tinsert(tbl, value) end
-	end
-
-	local publishedValues = {{}, {}, {}, {}, {}, {}}
-	state:Publisher("str")
-		:IgnoreIfEquals("")
-		:Share()
-		:MapToStringAddSuffix("_1")
-		:CallFunction(GetInsertValueFunc(publishedValues[1]))
-		:IgnoreIfEquals("B")
-		:MapToStringAddSuffix("_2")
-		:NestedShare()
-			:MapToStringAddSuffix("_3")
-			:NestedShare()
-				:CallFunction(GetInsertValueFunc(publishedValues[2]))
-				:MapToStringAddSuffix("_4")
-				:CallFunction(GetInsertValueFunc(publishedValues[3]))
-			:EndNestedShare()
-			:CallFunction(GetInsertValueFunc(publishedValues[4]))
-		:EndNestedShare()
-		:MapToStringAddSuffix("_5")
-		:CallFunction(GetInsertValueFunc(publishedValues[5]))
-		:CallFunction(GetInsertValueFunc(publishedValues[6]))
-		:EndShare()
-
-	assertEquals(publishedValues, {{"INITIAL_1"}, {"INITIAL_2_3"}, {"INITIAL_2_3_4"}, {"INITIAL_2"}, {"INITIAL_5"}, {"INITIAL"}})
-	for _, tbl in ipairs(publishedValues) do wipe(tbl) end
-
-	state.str = "A"
-	assertEquals(publishedValues, {{"A_1"}, {"A_2_3"}, {"A_2_3_4"}, {"A_2"}, {"A_5"}, {"A"}})
-	for _, tbl in ipairs(publishedValues) do wipe(tbl) end
-
-	state.str = "B"
-	assertEquals(publishedValues, {{"B_1"}, {}, {}, {}, {"B_5"}, {"B"}})
-	for _, tbl in ipairs(publishedValues) do wipe(tbl) end
-
-	state.str = "C"
-	assertEquals(publishedValues, {{"C_1"}, {"C_2_3"}, {"C_2_3_4"}, {"C_2"}, {"C_5"}, {"C"}})
-	for _, tbl in ipairs(publishedValues) do wipe(tbl) end
-
-	state.str = ""
-	assertEquals(publishedValues, {{}, {}, {}, {}, {}, {}})
-	for _, tbl in ipairs(publishedValues) do wipe(tbl) end
-end
-
 function TestState:TestStateExpression()
 	local COLOR = EnumType.New("COLOR", {
 		RED = EnumType.NewValue(),
@@ -299,45 +246,38 @@ function TestState:TestStateExpression()
 	local publishedValues1 = {}
 	local publishedValues2 = {}
 	local publishedValues3 = {}
-	local publishedValues4 = {}
 	state:Publisher([[num1 + num2]])
 		:CallFunction(function(value) tinsert(publishedValues1, value) end)
 	state:Publisher([[-1 * (EnumEquals(color, RED) and -num1 or -num2)]])
 		:CallFunction(function(value) tinsert(publishedValues2, value) end)
 	state:Publisher([[EnumEquals(color, RED) and "String 1" or "String 2"]])
 		:CallFunction(function(value) tinsert(publishedValues3, value) end)
-	state:Publisher([[num1 == 10 and Ignore() or num1]])
-		:CallFunction(function(value) tinsert(publishedValues4, value) end)
 
 	assertEquals(publishedValues1, {30})
 	assertEquals(publishedValues2, {10})
 	assertEquals(publishedValues3, {"String 1"})
-	assertEquals(publishedValues4, {})
 
 	state.color = COLOR.BLUE
 	assertEquals(publishedValues1, {30})
 	assertEquals(publishedValues2, {10, 20})
 	assertEquals(publishedValues3, {"String 1", "String 2"})
-	assertEquals(publishedValues4, {})
 
 	state.num1 = 11
 	assertEquals(publishedValues1, {30, 31})
 	assertEquals(publishedValues2, {10, 20})
 	assertEquals(publishedValues3, {"String 1", "String 2"})
-	assertEquals(publishedValues4, {11})
 
 	state.num2 = 21
 	assertEquals(publishedValues1, {30, 31, 32})
 	assertEquals(publishedValues2, {10, 20, 21})
 	assertEquals(publishedValues3, {"String 1", "String 2"})
-	assertEquals(publishedValues4, {11})
 
-	local publishedValues5 = {}
+	local publishedValues4 = {}
 	state:Publisher([[str == "1+2" and "orig" or "changed"]])
-		:CallFunction(function(value) tinsert(publishedValues5, value) end)
-	assertEquals(publishedValues5, {"orig"})
+		:CallFunction(function(value) tinsert(publishedValues4, value) end)
+	assertEquals(publishedValues4, {"orig"})
 	state.str = "2+3"
-	assertEquals(publishedValues5, {"orig", "changed"})
+	assertEquals(publishedValues4, {"orig", "changed"})
 end
 
 function TestState:TestDeferred()

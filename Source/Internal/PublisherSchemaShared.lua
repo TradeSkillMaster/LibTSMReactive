@@ -40,7 +40,6 @@ function ReactivePublisherSchemaShared.__protected:__init()
 	self.__super:__init(true)
 	self._parentSchema = nil
 	self._codeGen = nil
-	self._numShares = 0
 end
 
 ---@param parentSchema ReactivePublisherSchemaBase
@@ -62,21 +61,6 @@ end
 -- Public Class Methods
 -- ============================================================================
 
----Shares the result of the publisher at the current point in the chain.
----@return ReactivePublisherSchemaShared
-function ReactivePublisherSchemaShared:NestedShare()
-	self._numShares = self._numShares + 1
-	return self:_AddStepHelper(STEP.SHARE)
-end
-
----Ends the nested share.
----@return ReactivePublisherSchemaShared
-function ReactivePublisherSchemaShared:EndNestedShare()
-	assert(self._numShares > 0)
-	self._numShares = self._numShares - 1
-	return self:_AddStepHelper(STEP.END_SHARE)
-end
-
 ---Ends the share.
 ---@return ReactivePublisher
 function ReactivePublisherSchemaShared:EndShare()
@@ -97,7 +81,6 @@ end
 
 ---@protected
 function ReactivePublisherSchemaShared:_Commit()
-	assert(self._numShares == 0)
 	assert(self._codeGen)
 	self._codeGen = nil
 	local parentSchema = self._parentSchema
