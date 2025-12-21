@@ -233,6 +233,7 @@ function TestState:TestStateExpression()
 	local COLOR = EnumType.New("COLOR", {
 		RED = EnumType.NewValue(),
 		BLUE = EnumType.NewValue(),
+		GREEN = EnumType.NewValue(),
 	})
 	local state = Reactive.CreateStateSchema("TEST_STATE_EXPRESSION")
 		:AddEnumField("color", COLOR, COLOR.RED)
@@ -250,7 +251,7 @@ function TestState:TestStateExpression()
 		:CallFunction(function(value) tinsert(publishedValues1, value) end)
 	state:Publisher([[-1 * (EnumEquals(color, RED) and -num1 or -num2)]])
 		:CallFunction(function(value) tinsert(publishedValues2, value) end)
-	state:Publisher([[EnumEquals(color, RED) and "String 1" or "String 2"]])
+	state:Publisher([[(EnumEquals(color, RED) or EnumEquals(color, GREEN)) and "String 1" or "String 2"]])
 		:CallFunction(function(value) tinsert(publishedValues3, value) end)
 
 	assertEquals(publishedValues1, {30})
