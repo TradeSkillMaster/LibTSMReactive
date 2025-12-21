@@ -20,6 +20,7 @@ local STEP = EnumType.New("PUBLISHER_STEP", {
 	MAP_BOOLEAN_EQUALS = EnumType.NewValue(),
 	MAP_BOOLEAN_NOT_EQUALS = EnumType.NewValue(),
 	MAP_BOOLEAN_GREATER_THAN_OR_EQUALS = EnumType.NewValue(),
+	MAP_BOOLEAN_LESS_THAN = EnumType.NewValue(),
 	MAP_STRING_FORMAT = EnumType.NewValue(),
 	MAP_STRING_ADD_SUFFIX = EnumType.NewValue(),
 	MAP_STRING_ADD_PREFIX = EnumType.NewValue(),

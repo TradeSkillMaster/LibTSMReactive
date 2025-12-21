@@ -49,6 +49,7 @@ local UNOPTIMIZABLE_STEPS = {
 	[STEP.MAP_BOOLEAN_EQUALS] = true,
 	[STEP.MAP_BOOLEAN_NOT_EQUALS] = true,
 	[STEP.MAP_BOOLEAN_GREATER_THAN_OR_EQUALS] = true,
+	[STEP.MAP_BOOLEAN_LESS_THAN] = true,
 	[STEP.IGNORE_IF_EQUALS] = true,
 	[STEP.IGNORE_IF_NOT_EQUALS] = true,
 	[STEP.MAP_WITH_LOOKUP_TABLE] = true,
@@ -179,6 +180,8 @@ STEP_INFO[STEP.MAP_BOOLEAN_NOT_EQUALS] = { argTypes = { ARG_TYPE.ANY } }
 STEP_INFO[STEP.MAP_BOOLEAN_NOT_EQUALS].codeTemplate = [=[data = data ~= context[%(contextArgIndex)d]]=]
 STEP_INFO[STEP.MAP_BOOLEAN_GREATER_THAN_OR_EQUALS] = { argTypes = { ARG_TYPE.ANY } }
 STEP_INFO[STEP.MAP_BOOLEAN_GREATER_THAN_OR_EQUALS].codeTemplate = [=[data = data >= context[%(contextArgIndex)d]]=]
+STEP_INFO[STEP.MAP_BOOLEAN_LESS_THAN] = { argTypes = { ARG_TYPE.ANY } }
+STEP_INFO[STEP.MAP_BOOLEAN_LESS_THAN].codeTemplate = [=[data = data < context[%(contextArgIndex)d]]=]
 STEP_INFO[STEP.MAP_STRING_FORMAT] = { argTypes = { ARG_TYPE.STRING } }
 STEP_INFO[STEP.MAP_STRING_FORMAT].codeTemplate = [=[data = format(context[%(contextArgIndex)d], data)]=]
 STEP_INFO[STEP.MAP_STRING_ADD_SUFFIX] = { argTypes = { ARG_TYPE.STRING } }
