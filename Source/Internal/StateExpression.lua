@@ -158,7 +158,6 @@ function ReactiveStateExpression.__private:_Compile(expression)
 
 	tinsert(private.linesTemp, "data = "..expression)
 	self._code = table.concat(private.linesTemp, "\n")
-	print(self._code)
 	wipe(private.linesTemp)
 end
 
