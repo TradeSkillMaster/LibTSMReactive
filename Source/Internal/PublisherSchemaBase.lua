@@ -155,26 +155,6 @@ function ReactivePublisherSchemaBase:MapToStringFormat(formatStr)
 	return self:_AddStepHelper(STEP.MAP_STRING_FORMAT, formatStr)
 end
 
----Map published values to a string with the specified suffix appended.
----@generic T: ReactivePublisherSchemaBase
----@param self T
----@param suffix string The string to append to the published values
----@return T
-function ReactivePublisherSchemaBase:MapToStringAddSuffix(suffix)
-	---@cast self +ReactivePublisherSchemaBase
-	return self:_AddStepHelper(STEP.MAP_STRING_ADD_SUFFIX, suffix)
-end
-
----Map published values to a string with the specified prefix prepended.
----@generic T: ReactivePublisherSchemaBase
----@param self T
----@param prefix string The string to prepend to the published values
----@return T
-function ReactivePublisherSchemaBase:MapToStringAddPrefix(prefix)
-	---@cast self +ReactivePublisherSchemaBase
-	return self:_AddStepHelper(STEP.MAP_STRING_ADD_PREFIX, prefix)
-end
-
 ---Map published values to a specific value.
 ---@generic T: ReactivePublisherSchemaBase
 ---@param self T

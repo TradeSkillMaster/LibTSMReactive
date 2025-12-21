@@ -66,7 +66,7 @@ end
 ---@param key string The key to set in the state
 ---@param expression string The expression to apply to the state
 function UIManager:SetStateFromExpression(key, expression)
-	self._state:PublisherForExpression(expression)
+	self._state:Publisher(expression)
 		:AssignToTableKey(self._state, key)
 		:StoreIn(self._cancellables)
 end
