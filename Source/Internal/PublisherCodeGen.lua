@@ -504,7 +504,7 @@ function ReactivePublisherCodeGen.__private:_AddTypedArg(arg, argType, argNum, n
 		self._hash = Hash.Calculate(code, self._hash)
 		self._compiledExpressionCode[#self._steps] = gsub(code, "\n", "\n  ")
 		tinsert(private.argCommentTemp, "[["..expression:GetOriginalExpression().."]]")
-		arg = expression:GetContext()
+		return
 	elseif passedArgType == "string" then
 		tinsert(private.argCommentTemp, "\""..arg.."\"")
 	elseif passedArgType == "number" or passedArgType == "boolean" then

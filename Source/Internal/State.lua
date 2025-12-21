@@ -53,21 +53,19 @@ function STATE_METHODS:Publisher(expressionStr)
 			:IgnoreDuplicates()
 	end
 
-	local expression = Expression.Get(expressionStr, context.schema)
+	local expression = Expression.Get(expressionStr)
+	local errStr = expression:Validate(context.schema)
+	if errStr then
+		error("Expression validation failed. "..errStr, 2)
+	end
 	local singleKey = expression:GetSingleKey()
 	local publisher = self:_GetPublisher()
 	if singleKey then
-		if not context.schema:_HasKey(singleKey) then ---@diagnostic disable-line: invisible
-			error("Unknown state key: "..tostring(singleKey), 2)
-		end
 		publisher:MapWithKey(singleKey)
 		publisher:IgnoreDuplicates()
 	else
 		assert(not next(private.keysTemp))
 		for key in expression:KeyIterator() do
-			if not context.schema:_HasKey(key) then ---@diagnostic disable-line: invisible
-				error("Unknown state key: "..tostring(key), 2)
-			end
 			tinsert(private.keysTemp, key)
 		end
 		publisher:IgnoreDuplicatesWithKeys(Table.UnpackAndWipe(private.keysTemp))
