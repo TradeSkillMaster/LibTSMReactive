@@ -321,20 +321,22 @@ end
 ---@param self T
 ---@param obj table The object to call the method on
 ---@param method string The name of the method to call with the published values
+---@param arg any An additional argument to pass to the method
 ---@return T
-function ReactivePublisherSchemaBase:CallMethod(obj, method)
+function ReactivePublisherSchemaBase:CallMethod(obj, method, arg)
 	---@cast self +ReactivePublisherSchemaBase
-	return self:_AddStepHelper(STEP.CALL_METHOD, obj, method)
+	return self:_AddStepHelper(STEP.CALL_METHOD, obj, method, arg)
 end
 
 ---Calls a function with the published values.
 ---@generic T: ReactivePublisherSchemaBase
 ---@param self T
----@param func fun(value: any) The function to call with the published values
+---@param func fun(value: any, arg: any) The function to call with the published values
+---@param arg any An additional argument to pass to the function
 ---@return T
-function ReactivePublisherSchemaBase:CallFunction(func)
+function ReactivePublisherSchemaBase:CallFunction(func, arg)
 	---@cast self +ReactivePublisherSchemaBase
-	return self:_AddStepHelper(STEP.CALL_FUNCTION, func)
+	return self:_AddStepHelper(STEP.CALL_FUNCTION, func, arg)
 end
 
 ---Assigns published values to the specified key in the table.
