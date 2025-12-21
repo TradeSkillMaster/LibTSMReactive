@@ -87,7 +87,8 @@ end
 ---Creates a new publisher which publishes the state when the result of a function which gets passed the specified keys changes.
 ---
 ---NOTE: The function must be constant and strictly depend on its inputs only.
----@param ... string The key to ignore duplicates for
+---@param func fun(...: any): any The mapping function
+---@param ... string The keys to pass to the function
 ---@return ReactivePublisherSchema
 function STATE_METHODS:PublisherForFunctionWithKeys(func, ...)
 	local context = private.stateContext[self]

@@ -203,9 +203,10 @@ end]=]
 STEP_INFO[STEP.MAP_NON_NIL_WITH_METHOD] = { argTypes = { ARG_TYPE.STRING, ARG_TYPE.OPTIONAL_ANY } }
 STEP_INFO[STEP.MAP_NON_NIL_WITH_METHOD].codeTemplate =
 [=[if data ~= nil then
-  local func = data[context[%(contextArgIndex)d]]
+  local key = context[%(contextArgIndex)d]
+  local func = data[key]
   if not func then
-    error(format("Method (%%s) does not exist on object (%%s)", tostring(context[%(contextArgIndex)d]), tostring(data)))
+    error("Method ("..tostring(key)..") does not exist on object ("..tostring(data)..")")
   end
   data = func(data, context[%(contextArgIndex)d + 1])
 end]=]
@@ -278,27 +279,27 @@ STEP_INFO[STEP.PRINT].codeTemplate =
 [=[do
   local contextStr = context[%(contextArgIndex)d]
   if contextStr then
-    print(format("Published value (%%s): %%s", tostring(contextStr), tostring(data)))
+    print("Published value ("..tostring(contextStr).."): "..tostring(data))
   else
-    print(format("Published value: %%s", tostring(data)))
+    print("Published value: "..tostring(data))
   end
   if type(data) == "table" then
     Dump(data)
   end
 end]=]
-STEP_INFO[STEP.CALL_METHOD] = { argTypes = { ARG_TYPE.TABLE, ARG_TYPE.STRING } }
+STEP_INFO[STEP.CALL_METHOD] = { argTypes = { ARG_TYPE.TABLE, ARG_TYPE.STRING, ARG_TYPE.OPTIONAL_ANY } }
 STEP_INFO[STEP.CALL_METHOD].codeTemplate =
 [=[do
   local obj = context[%(contextArgIndex)d]
   local methodName = context[%(contextArgIndex)d + 1]
   local func = obj[methodName]
   if not func then
-    error(format("Method (%%s) does not exist on object (%%s)", tostring(methodName), tostring(obj)))
+    error("Method ("..tostring(methodName)..") does not exist on object ("..tostring(obj)..")")
   end
-  func(obj, data)
+  func(obj, data, context[%(contextArgIndex)d + 2])
 end]=]
-STEP_INFO[STEP.CALL_FUNCTION] = { argTypes = { ARG_TYPE.FUNCTION } }
-STEP_INFO[STEP.CALL_FUNCTION].codeTemplate = [=[context[%(contextArgIndex)d](data)]=]
+STEP_INFO[STEP.CALL_FUNCTION] = { argTypes = { ARG_TYPE.FUNCTION, ARG_TYPE.OPTIONAL_ANY } }
+STEP_INFO[STEP.CALL_FUNCTION].codeTemplate = [=[context[%(contextArgIndex)d](data, context[%(contextArgIndex)d + 1])]=]
 STEP_INFO[STEP.ASSIGN_TO_TABLE_KEY] = { argTypes = { ARG_TYPE.TABLE, ARG_TYPE.STRING } }
 STEP_INFO[STEP.ASSIGN_TO_TABLE_KEY].codeTemplate = [=[context[%(contextArgIndex)d][context[%(contextArgIndex)d + 1]] = data]=]
 do

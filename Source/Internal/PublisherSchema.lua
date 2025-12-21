@@ -75,26 +75,27 @@ function ReactivePublisherSchema:Share()
 	self._hasShare = true
 	self:_AddStepHelper(STEP.SHARE)
 	assert(self._codeGen)
-	local shared = ReactivePublisherSchemaShared.Get(self, self._codeGen)
-	return shared
+	return ReactivePublisherSchemaShared.Get(self, self._codeGen)
 end
 
 ---Calls a method with the published values.
 ---@param obj table The object to call the method on
 ---@param method string The name of the method to call with the published values
+---@param arg any An additional argument to pass to the method
 ---@return ReactivePublisher
-function ReactivePublisherSchema:CallMethod(obj, method)
+function ReactivePublisherSchema:CallMethod(obj, method, arg)
 	assert(not self._hasShare)
-	self.__super:CallMethod(obj, method) ---@diagnostic disable-line: discard-returns
+	local _ = self.__super:CallMethod(obj, method, arg)
 	return self:_Commit()
 end
 
 ---Calls a function with the published values.
 ---@param func fun(value: any) The function to call with the published values
+---@param arg any An additional argument to pass to the function
 ---@return ReactivePublisher
-function ReactivePublisherSchema:CallFunction(func)
+function ReactivePublisherSchema:CallFunction(func, arg)
 	assert(not self._hasShare)
-	self.__super:CallFunction(func) ---@diagnostic disable-line: discard-returns
+	local _ = self.__super:CallFunction(func, arg)
 	return self:_Commit()
 end
 
@@ -104,7 +105,7 @@ end
 ---@return ReactivePublisher
 function ReactivePublisherSchema:AssignToTableKey(tbl, key)
 	assert(not self._hasShare)
-	self.__super:AssignToTableKey(tbl, key) ---@diagnostic disable-line: discard-returns
+	local _ = self.__super:AssignToTableKey(tbl, key)
 	return self:_Commit()
 end
 

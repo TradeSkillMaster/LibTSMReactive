@@ -93,7 +93,7 @@ end
 ---@param tblKey string The key within the table to assign to
 function UIManager:MirrorStateWithTable(key, tbl, tblKey)
 	self._state[key] = tbl[tblKey]
-	self._state:PublisherForKeyChange(key)
+	self._state:Publisher(key)
 		:AssignToTableKey(tbl, tblKey)
 		:StoreIn(self._cancellables)
 end
@@ -178,7 +178,7 @@ end
 ---Gets a publisher for a state key.
 ---@param key string The state key to get a publisher for.
 function UIManager:StatePublisherForKey(key)
-	return self._state:PublisherForKeyChange(key)
+	return self._state:Publisher(key)
 end
 
 
