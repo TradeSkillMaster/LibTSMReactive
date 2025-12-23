@@ -135,14 +135,14 @@ function ReactivePublisherSchemaBase:MapBooleanGreaterThanOrEquals(value)
 	return self:_AddStepHelper(STEP.MAP_BOOLEAN_GREATER_THAN_OR_EQUALS, value)
 end
 
----Map published values to a boolean based on whether or not it is less than to the specified value.
+---Map published values to a boolean based on whether or not it is less than or equal to the specified value.
 ---@generic T: ReactivePublisherSchemaBase
 ---@param self T
 ---@param value any The value to compare with
 ---@return T
-function ReactivePublisherSchemaBase:MapBooleanLessThan(value)
+function ReactivePublisherSchemaBase:MapBooleanLessThanOrEquals(value)
 	---@cast self +ReactivePublisherSchemaBase
-	return self:_AddStepHelper(STEP.MAP_BOOLEAN_LESS_THAN, value)
+	return self:_AddStepHelper(STEP.MAP_BOOLEAN_LESS_THAN_OR_EQUALS, value)
 end
 
 ---Map published values as arguments to a format string.
