@@ -49,7 +49,7 @@ function STATE_METHODS:Publisher(expressionStr)
 	if context.schema:_HasKey(expressionStr) then ---@diagnostic disable-line: invisible
 		-- Optimized path for just a single key
 		return self:_GetPublisher()
-			:MapWithKey(expressionStr)
+			:Map(expressionStr)
 			:IgnoreDuplicates()
 	end
 
@@ -61,7 +61,7 @@ function STATE_METHODS:Publisher(expressionStr)
 	local singleKey = expression:GetSingleKey()
 	local publisher = self:_GetPublisher()
 	if singleKey then
-		publisher:MapWithKey(singleKey)
+		publisher:Map(singleKey)
 		publisher:IgnoreDuplicates()
 	else
 		assert(not next(private.keysTemp))
@@ -106,15 +106,15 @@ function STATE_METHODS:PublisherForFunctionWithKeys(func, ...)
 	end
 	if numArgs == 1 then
 		return self:_GetPublisher()
-			:MapWithKey(...)
+			:Map(...)
 			:IgnoreDuplicates()
-			:MapWithFunction(func)
+			:Map(func)
 			:IgnoreDuplicates()
 	else
 		assert(numArgs > 1)
 		return self:_GetPublisher()
 			:IgnoreDuplicatesWithKeys(...)
-			:MapWithFunctionAndKeys(func, ...)
+			:_MapWithFunctionAndKeys(func, ...) ---@diagnostic disable-line invisible
 			:IgnoreDuplicates()
 	end
 end

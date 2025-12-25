@@ -82,7 +82,7 @@ end
 ---@param publisher ReactivePublisherSchema The publisher
 function UIManager:ProcessActionFromPublisher(action, publisher)
 	publisher
-		:MapToValue(action)
+		:ReplaceWith(action)
 		:CallMethod(self, "ProcessAction")
 		:StoreIn(self._cancellables)
 end

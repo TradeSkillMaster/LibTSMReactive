@@ -26,11 +26,11 @@ local private = {
 local MAX_VARARG_ARGS = 20
 local STEP = Util.PUBLISHER_STEP
 local ARG_TYPE = EnumType.New("PUBLISHER_ARG_TYPE", {
-	NUMBER = EnumType.NewValue(),
 	STRING = EnumType.NewValue(),
 	STRING_OR_NUMBER = EnumType.NewValue(),
 	TABLE = EnumType.NewValue(),
 	FUNCTION = EnumType.NewValue(),
+	ANY_LITERAL = EnumType.NewValue(),
 	ANY = EnumType.NewValue(),
 	OPTIONAL_ANY = EnumType.NewValue(),
 	VARARG_STRING = EnumType.NewValue(),
@@ -57,16 +57,25 @@ local UNOPTIMIZABLE_STEPS = {
 	[STEP.MAP_NON_NIL_WITH_METHOD] = true,
 }
 local OPTIMIZATION_IGNORED_STEPS = {
-	[STEP.IGNORE_NIL] = true,
 	[STEP.PRINT] = true,
 	[STEP.INVERT_BOOLEAN] = true,
 }
-local ARG_TYPE_CHECK_FUNC = {
-	[ARG_TYPE.NUMBER] = function(valueType) return valueType == "number" end,
+local ARG_TYPE_IS_LITERAL = {
+	[ARG_TYPE.STRING] = true,
+	[ARG_TYPE.STRING_OR_NUMBER] = true,
+	[ARG_TYPE.TABLE] = false,
+	[ARG_TYPE.FUNCTION] = false,
+	[ARG_TYPE.ANY_LITERAL] = true,
+	[ARG_TYPE.ANY] = false,
+	[ARG_TYPE.OPTIONAL_ANY] = false,
+	[ARG_TYPE.STATE_EXPRESSION] = true,
+}
+local ARG_TYPE_CHECK_FUNC = { ---@type table<EnumValue,fun(valueType: type):boolean>
 	[ARG_TYPE.STRING] = function(valueType) return valueType == "string" end,
 	[ARG_TYPE.STRING_OR_NUMBER] = function(valueType) return valueType == "string" or valueType == "number" end,
 	[ARG_TYPE.TABLE] = function(valueType) return valueType == "table" end,
 	[ARG_TYPE.FUNCTION] = function(valueType) return valueType == "function" end,
+	[ARG_TYPE.ANY_LITERAL] = function(valueType) return valueType == "nil" or valueType == "string" or valueType == "number" or valueType == "boolean" end,
 	[ARG_TYPE.ANY] = function(valueType) return true end,
 	[ARG_TYPE.OPTIONAL_ANY] = function(valueType) return true end,
 	[ARG_TYPE.STATE_EXPRESSION] = function(valueType) return valueType == "table" end,
@@ -149,23 +158,14 @@ STEP_INFO[STEP.MAP_WITH_FUNCTION_AND_KEYS].codeTemplate = [=[do
   data = context[%(contextArgIndex)d](unpack(context, valueOffset + 1, valueOffset + numArgs))
 end]=]
 STEP_INFO[STEP.MAP_WITH_METHOD] = { argTypes = { ARG_TYPE.STRING, ARG_TYPE.OPTIONAL_ANY } }
-STEP_INFO[STEP.MAP_WITH_METHOD].codeTemplate = [=[data = data[context[%(contextArgIndex)d]](data, context[%(contextArgIndex)d + 1])]=]
+STEP_INFO[STEP.MAP_WITH_METHOD].codeTemplate = [=[data = data[%(literal)s](data, context[%(contextArgIndex)d])]=]
 STEP_INFO[STEP.MAP_WITH_KEY] = { argTypes = { ARG_TYPE.STRING_OR_NUMBER } }
-STEP_INFO[STEP.MAP_WITH_KEY].codeTemplate = [=[data = data[context[%(contextArgIndex)d]]]=]
-STEP_INFO[STEP.MAP_WITH_KEY_COALESCED] = { argTypes = { ARG_TYPE.STRING, ARG_TYPE.STRING } }
-STEP_INFO[STEP.MAP_WITH_KEY_COALESCED].codeTemplate =
-[=[do
-  local newValue = data[context[%(contextArgIndex)d]]
-  if newValue == nil then
-    newValue = data[context[%(contextArgIndex)d + 1]]
-  end
-  data = newValue
-end]=]
+STEP_INFO[STEP.MAP_WITH_KEY].codeTemplate = [=[data = data[%(literal)s]]=]
 STEP_INFO[STEP.MAP_WITH_LOOKUP_TABLE] = { argTypes = { ARG_TYPE.TABLE } }
 STEP_INFO[STEP.MAP_WITH_LOOKUP_TABLE].codeTemplate = [=[data = context[%(contextArgIndex)d][data]]=]
 STEP_INFO[STEP.MAP_WITH_STATE_EXPRESSION] = { argTypes = { ARG_TYPE.STATE_EXPRESSION } }
 STEP_INFO[STEP.MAP_WITH_STATE_EXPRESSION].codeTemplate = [=[do
-  %(compiledExpressionCode)s
+  %(literal)s
 end]=]
 STEP_INFO[STEP.MAP_BOOLEAN_WITH_VALUES] = { argTypes = { ARG_TYPE.ANY, ARG_TYPE.ANY } }
 STEP_INFO[STEP.MAP_BOOLEAN_WITH_VALUES].codeTemplate =
@@ -178,12 +178,12 @@ STEP_INFO[STEP.MAP_BOOLEAN_EQUALS] = { argTypes = { ARG_TYPE.ANY } }
 STEP_INFO[STEP.MAP_BOOLEAN_EQUALS].codeTemplate = [=[data = data == context[%(contextArgIndex)d]]=]
 STEP_INFO[STEP.MAP_BOOLEAN_NOT_EQUALS] = { argTypes = { ARG_TYPE.ANY } }
 STEP_INFO[STEP.MAP_BOOLEAN_NOT_EQUALS].codeTemplate = [=[data = data ~= context[%(contextArgIndex)d]]=]
-STEP_INFO[STEP.MAP_BOOLEAN_GREATER_THAN_OR_EQUALS] = { argTypes = { ARG_TYPE.ANY } }
-STEP_INFO[STEP.MAP_BOOLEAN_GREATER_THAN_OR_EQUALS].codeTemplate = [=[data = data >= context[%(contextArgIndex)d]]=]
-STEP_INFO[STEP.MAP_BOOLEAN_LESS_THAN_OR_EQUALS] = { argTypes = { ARG_TYPE.ANY } }
-STEP_INFO[STEP.MAP_BOOLEAN_LESS_THAN_OR_EQUALS].codeTemplate = [=[data = data <= context[%(contextArgIndex)d]]=]
+STEP_INFO[STEP.MAP_BOOLEAN_GREATER_THAN_OR_EQUALS] = { argTypes = { ARG_TYPE.STRING_OR_NUMBER } }
+STEP_INFO[STEP.MAP_BOOLEAN_GREATER_THAN_OR_EQUALS].codeTemplate = [=[data = data >= %(literal)s]=]
+STEP_INFO[STEP.MAP_BOOLEAN_LESS_THAN_OR_EQUALS] = { argTypes = { ARG_TYPE.STRING_OR_NUMBER } }
+STEP_INFO[STEP.MAP_BOOLEAN_LESS_THAN_OR_EQUALS].codeTemplate = [=[data = data <= %(literal)s]=]
 STEP_INFO[STEP.MAP_STRING_FORMAT] = { argTypes = { ARG_TYPE.STRING } }
-STEP_INFO[STEP.MAP_STRING_FORMAT].codeTemplate = [=[data = format(context[%(contextArgIndex)d], data)]=]
+STEP_INFO[STEP.MAP_STRING_FORMAT].codeTemplate = [=[data = format(%(literal)s, data)]=]
 STEP_INFO[STEP.MAP_TO_VALUE] = { argTypes = { ARG_TYPE.ANY } }
 STEP_INFO[STEP.MAP_TO_VALUE].codeTemplate = [=[data = context[%(contextArgIndex)d]]=]
 STEP_INFO[STEP.MAP_NIL_TO_VALUE] = { argTypes = { ARG_TYPE.ANY } }
@@ -199,12 +199,12 @@ end]=]
 STEP_INFO[STEP.MAP_NON_NIL_WITH_METHOD] = { argTypes = { ARG_TYPE.STRING, ARG_TYPE.OPTIONAL_ANY } }
 STEP_INFO[STEP.MAP_NON_NIL_WITH_METHOD].codeTemplate =
 [=[if data ~= nil then
-  local key = context[%(contextArgIndex)d]
+  local key = %(literal)s
   local func = data[key]
   if not func then
     error("Method ("..tostring(key)..") does not exist on object ("..tostring(data)..")")
   end
-  data = func(data, context[%(contextArgIndex)d + 1])
+  data = func(data, context[%(contextArgIndex)d])
 end]=]
 STEP_INFO[STEP.INVERT_BOOLEAN] = { argTypes = {} }
 STEP_INFO[STEP.INVERT_BOOLEAN].codeTemplate =
@@ -212,29 +212,24 @@ STEP_INFO[STEP.INVERT_BOOLEAN].codeTemplate =
   error("Invalid data type: "..tostring(data))
 end
 data = not data]=]
-STEP_INFO[STEP.IGNORE_IF_KEY_EQUALS] = { argTypes = { ARG_TYPE.STRING_OR_NUMBER, ARG_TYPE.ANY } }
+STEP_INFO[STEP.IGNORE_IF_KEY_EQUALS] = { argTypes = { ARG_TYPE.STRING_OR_NUMBER, ARG_TYPE.ANY_LITERAL } }
 STEP_INFO[STEP.IGNORE_IF_KEY_EQUALS].codeTemplate =
-[=[if data[context[%(contextArgIndex)d]] == context[%(contextArgIndex)d + 1] then
+[=[if data[%(literal)s] == %(literal2)s then
   break
 end]=]
-STEP_INFO[STEP.IGNORE_IF_KEY_NOT_EQUALS] = { argTypes = { ARG_TYPE.STRING_OR_NUMBER, ARG_TYPE.ANY } }
+STEP_INFO[STEP.IGNORE_IF_KEY_NOT_EQUALS] = { argTypes = { ARG_TYPE.STRING_OR_NUMBER, ARG_TYPE.ANY_LITERAL } }
 STEP_INFO[STEP.IGNORE_IF_KEY_NOT_EQUALS].codeTemplate =
-[=[if data[context[%(contextArgIndex)d]] ~= context[%(contextArgIndex)d + 1] then
+[=[if data[%(literal)s] ~= %(literal2)s then
   break
 end]=]
-STEP_INFO[STEP.IGNORE_IF_EQUALS] = { argTypes = { ARG_TYPE.ANY } }
+STEP_INFO[STEP.IGNORE_IF_EQUALS] = { argTypes = { ARG_TYPE.ANY_LITERAL } }
 STEP_INFO[STEP.IGNORE_IF_EQUALS].codeTemplate =
-[=[if data == context[%(contextArgIndex)d] then
+[=[if data == %(literal)s then
   break
 end]=]
-STEP_INFO[STEP.IGNORE_IF_NOT_EQUALS] = { argTypes = { ARG_TYPE.ANY } }
+STEP_INFO[STEP.IGNORE_IF_NOT_EQUALS] = { argTypes = { ARG_TYPE.ANY_LITERAL } }
 STEP_INFO[STEP.IGNORE_IF_NOT_EQUALS].codeTemplate =
-[=[if data ~= context[%(contextArgIndex)d] then
-  break
-end]=]
-STEP_INFO[STEP.IGNORE_NIL] = { argTypes = {} }
-STEP_INFO[STEP.IGNORE_NIL].codeTemplate =
-[=[if data == nil then
+[=[if data ~= %(literal)s then
   break
 end]=]
 STEP_INFO[STEP.IGNORE_DUPLICATES] = { argTypes = {}, numIgnoreContext = 1 }
@@ -258,16 +253,6 @@ STEP_INFO[STEP.IGNORE_DUPLICATES_WITH_KEYS].codeTemplate =
     break
   end
 end]=]
-STEP_INFO[STEP.IGNORE_DUPLICATES_WITH_METHOD] = { argTypes = { ARG_TYPE.STRING }, numIgnoreContext = 1 }
-STEP_INFO[STEP.IGNORE_DUPLICATES_WITH_METHOD].codeTemplate =
-[=[do
-  local hash = data[context[%(contextArgIndex)d]](data)
-  if hash == context[-%(ignoreIndex)d] then
-    break
-  else
-    context[-%(ignoreIndex)d] = hash
-  end
-end]=]
 STEP_INFO[STEP.SHARE] = { argTypes = {}, shareType = SHARE_TYPE.START }
 STEP_INFO[STEP.END_SHARE] = { argTypes = {}, shareType = SHARE_TYPE.END }
 STEP_INFO[STEP.PRINT] = { argTypes = { ARG_TYPE.OPTIONAL_ANY } }
@@ -287,17 +272,17 @@ STEP_INFO[STEP.CALL_METHOD] = { argTypes = { ARG_TYPE.TABLE, ARG_TYPE.STRING, AR
 STEP_INFO[STEP.CALL_METHOD].codeTemplate =
 [=[do
   local obj = context[%(contextArgIndex)d]
-  local methodName = context[%(contextArgIndex)d + 1]
+  local methodName = %(literal)s
   local func = obj[methodName]
   if not func then
-    error("Method ("..tostring(methodName)..") does not exist on object ("..tostring(obj)..")")
+    error("Method ("..methodName..") does not exist on object ("..tostring(obj)..")")
   end
-  func(obj, data, context[%(contextArgIndex)d + 2])
+  func(obj, data, context[%(contextArgIndex)d + 1])
 end]=]
 STEP_INFO[STEP.CALL_FUNCTION] = { argTypes = { ARG_TYPE.FUNCTION, ARG_TYPE.OPTIONAL_ANY } }
 STEP_INFO[STEP.CALL_FUNCTION].codeTemplate = [=[context[%(contextArgIndex)d](data, context[%(contextArgIndex)d + 1])]=]
 STEP_INFO[STEP.ASSIGN_TO_TABLE_KEY] = { argTypes = { ARG_TYPE.TABLE, ARG_TYPE.STRING } }
-STEP_INFO[STEP.ASSIGN_TO_TABLE_KEY].codeTemplate = [=[context[%(contextArgIndex)d][context[%(contextArgIndex)d + 1]] = data]=]
+STEP_INFO[STEP.ASSIGN_TO_TABLE_KEY].codeTemplate = [=[context[%(contextArgIndex)d][%(literal)s] = data]=]
 do
 	for stepType, info in pairs(STEP_INFO) do
 		info.isTerminal = TERMINAL_STEPS[stepType] or false
@@ -340,7 +325,7 @@ function ReactivePublisherCodeGen.__private:__init()
 	self._totalNumArgs = 0
 	self._firstIgnoreVarIndex = {}
 	self._totalNumIgnoreVars = 0
-	self._compiledExpressionCode = {}
+	self._literals = {}
 	self._optimizeResult = nil
 	self._optimizeKeys = {}
 end
@@ -354,7 +339,7 @@ function ReactivePublisherCodeGen.__private:_Release()
 	self._totalNumArgs = 0
 	wipe(self._firstIgnoreVarIndex)
 	self._totalNumIgnoreVars = 0
-	wipe(self._compiledExpressionCode)
+	wipe(self._literals)
 	self._optimizeResult = nil
 	Table.WipeAndDeallocate(self._optimizeKeys)
 	private.objectPool:Recycle(self)
@@ -443,11 +428,7 @@ function ReactivePublisherCodeGen:AddStep(stepType, ...)
 		if stepType == STEP.MAP_WITH_KEY or stepType == STEP.IGNORE_IF_KEY_EQUALS or stepType == STEP.IGNORE_IF_KEY_NOT_EQUALS then
 			local arg1 = ...
 			self._optimizeKeys[arg1] = true
-		elseif stepType == STEP.MAP_WITH_KEY_COALESCED then
-			local arg1, arg2 = ...
-			self._optimizeKeys[arg1] = true
-			self._optimizeKeys[arg2] = true
-		elseif stepType == STEP.IGNORE_DUPLICATES or stepType == STEP.MAP_TO_VALUE or stepType == STEP.IGNORE_DUPLICATES_WITH_METHOD then
+		elseif stepType == STEP.IGNORE_DUPLICATES or stepType == STEP.MAP_TO_VALUE then
 			self._optimizeResult = true
 		elseif stepType == STEP.IGNORE_DUPLICATES_WITH_KEYS then
 			for _, key in Vararg.Iterator(...) do
@@ -499,10 +480,7 @@ function ReactivePublisherCodeGen.__private:_AddTypedArg(arg, argType, argNum, n
 	assert(ARG_TYPE_CHECK_FUNC[argType](passedArgType))
 	if argType == ARG_TYPE.STATE_EXPRESSION then
 		local expression = arg --[[@as ReactiveStateExpression]]
-		local code = expression:GetCode()
-		-- Add the code to our hash
-		self._hash = Hash.Calculate(code, self._hash)
-		self._compiledExpressionCode[#self._steps] = gsub(code, "\n", "\n  ")
+		self:_AddLiteral(gsub(expression:GetCode(), "\n", "\n  "), true)
 		tinsert(private.argCommentTemp, "[["..expression:GetOriginalExpression().."]]")
 		return
 	elseif passedArgType == "string" then
@@ -514,7 +492,11 @@ function ReactivePublisherCodeGen.__private:_AddTypedArg(arg, argType, argNum, n
 	elseif argNum < numArgs or (argNum == numArgs and passedArgType ~= "nil") then
 		tinsert(private.argCommentTemp, "<"..tostring(arg)..">")
 	end
-	self:_AddArg(arg)
+	if ARG_TYPE_IS_LITERAL[argType] and argNum then
+		self:_AddLiteral(arg)
+	else
+		self:_AddArg(arg)
+	end
 end
 
 function ReactivePublisherCodeGen.__private:_AddArg(arg)
@@ -530,6 +512,27 @@ function ReactivePublisherCodeGen.__private:_AddIgnoreVar()
 	local argIndex = self._totalNumIgnoreVars + 1
 	self._totalNumIgnoreVars = argIndex
 	self._firstIgnoreVarIndex[stepNum] = self._firstIgnoreVarIndex[stepNum] or argIndex
+end
+
+function ReactivePublisherCodeGen.__private:_AddLiteral(value, raw)
+	-- Add the literal to our hash
+	self._hash = Hash.Calculate(value, self._hash)
+	local valueType = type(value)
+	if raw then
+		assert(valueType == "string")
+	elseif valueType == "string" then
+		value = "\""..value.."\""
+	else
+		value = tostring(value)
+	end
+	local stepNum = #self._steps
+	if self._literals[stepNum] then
+		-- Store a 2nd literal at the negative index
+		assert(not self._literals[-stepNum])
+		self._literals[-stepNum] = value
+	else
+		self._literals[stepNum] = value
+	end
 end
 
 function ReactivePublisherCodeGen.__private:_CompileFunction()
@@ -588,12 +591,17 @@ function ReactivePublisherCodeGen.__private:_CompileStep(stepNum)
 	local info = self._steps[stepNum]
 	assert(info.codeTemplate)
 	private.stringBuilder:SetTemplate(info.codeTemplate)
-	local compiledExpressionCode = self._compiledExpressionCode[stepNum]
-	if compiledExpressionCode then
-		private.stringBuilder:SetParam("compiledExpressionCode", compiledExpressionCode)
-		assert(private.stringBuilder:GetParamCount("compiledExpressionCode") == 1)
-		-- Compile the new template and continue
-		private.stringBuilder:SetTemplate(private.stringBuilder:Commit())
+	local literal = self._literals[stepNum]
+	if literal then
+		private.stringBuilder:SetParam("literal", literal)
+		assert(private.stringBuilder:GetParamCount("literal") == 1)
+		local literal2 = self._literals[-stepNum]
+		if literal2 then
+			private.stringBuilder:SetParam("literal2", literal2)
+			assert(private.stringBuilder:GetParamCount("literal2") == 1)
+		else
+			assert(private.stringBuilder:GetParamCount("literal2") == 0)
+		end
 	end
 	local firstArgIndex = self._firstArgIndex[stepNum]
 	if firstArgIndex then
