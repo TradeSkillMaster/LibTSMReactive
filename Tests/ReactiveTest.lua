@@ -55,6 +55,7 @@ function TestState:TestPublisher()
 	local state = Reactive.CreateStateSchema("TEST_PUBLISHER")
 		:AddNumberField("num1", 0)
 		:AddStringField("str1", "")
+		:AddOptionalTableField("tbl1")
 		:Commit()
 		:CreateState()
 		:SetAutoStore(private.cancellables)
@@ -63,49 +64,75 @@ function TestState:TestPublisher()
 	state:Publisher("num1")
 		:CallFunction(function(value) tinsert(publishedValues1, value) end)
 
-	local publishedValues2, publishedValues3 = {}, {}
+	local publishedValues2 = {}
 	state:Publisher("str1")
 		:IgnoreIfEquals("ignore1")
 		:IgnoreIfEquals("ignore2")
 		:CallFunction(function(value) tinsert(publishedValues2, value) end)
+
+	local publishedValues3 = {}
 	state:Publisher("str1")
 		:IgnoreIfEquals("ignore1")
 		:IgnoreIfEquals("ignore3")
 		:CallFunction(function(value) tinsert(publishedValues3, value) end)
 
+	local publishedValues4 = {}
+	state:Publisher("tbl1")
+		:IgnoreNil()
+		:IgnoreIfEquals(true, "shouldIgnore")
+		:CallFunction(function(value) tinsert(publishedValues4, value) end)
+
 	assertEquals(publishedValues1, {0})
 	assertEquals(publishedValues2, {""})
 	assertEquals(publishedValues3, {""})
+	assertEquals(publishedValues4, {})
 
 	state.num1 = 1
 	assertEquals(publishedValues1, {0, 1})
 	assertEquals(publishedValues2, {""})
 	assertEquals(publishedValues3, {""})
+	assertEquals(publishedValues4, {})
 
 	state.str1 = "a"
 	assertEquals(publishedValues1, {0, 1})
 	assertEquals(publishedValues2, {"", "a"})
 	assertEquals(publishedValues3, {"", "a"})
+	assertEquals(publishedValues4, {})
 
 	state.str1 = "ignore1"
 	assertEquals(publishedValues1, {0, 1})
 	assertEquals(publishedValues2, {"", "a"})
 	assertEquals(publishedValues3, {"", "a"})
+	assertEquals(publishedValues4, {})
 
 	state.str1 = "ignore2"
 	assertEquals(publishedValues1, {0, 1})
 	assertEquals(publishedValues2, {"", "a"})
 	assertEquals(publishedValues3, {"", "a", "ignore2"})
+	assertEquals(publishedValues4, {})
 
 	state.str1 = "ignore3"
 	assertEquals(publishedValues1, {0, 1})
 	assertEquals(publishedValues2, {"", "a", "ignore3"})
 	assertEquals(publishedValues3, {"", "a", "ignore2"})
+	assertEquals(publishedValues4, {})
+
+	state.tbl1 = {a = 2}
+	assertEquals(publishedValues1, {0, 1})
+	assertEquals(publishedValues2, {"", "a", "ignore3"})
+	assertEquals(publishedValues3, {"", "a", "ignore2"})
+	assertEquals(publishedValues4, {{a = 2}})
+
+	state.tbl1 = {a = 3, shouldIgnore = true}
+	assertEquals(publishedValues1, {0, 1})
+	assertEquals(publishedValues2, {"", "a", "ignore3"})
+	assertEquals(publishedValues3, {"", "a", "ignore2"})
+	assertEquals(publishedValues4, {{a = 2}})
 
 	local publishedValues4 = {}
 	state:Publisher("num1")
-		:MapToValue({val = 2, GetValue = function(self, extra) return self.val + extra end})
-		:MapWithMethod("GetValue", 1)
+		:ReplaceWith({val = 2, GetValue = function(self, extra) return self.val + extra end})
+		:Map("GetValue()", 1)
 		:CallFunction(function(value) tinsert(publishedValues4, value) end)
 	assertEquals(publishedValues4, {3})
 end
@@ -119,7 +146,7 @@ function TestState:TestNilDuplicates()
 
 	local publishedValues = {}
 	state:Publisher("num")
-		:MapNilToValue(-1)
+		:CoalesceNil(-1)
 		:CallFunction(function(value) tinsert(publishedValues, value) end)
 
 	assertEquals(publishedValues, {-1})
@@ -206,7 +233,7 @@ function TestState:TestShare()
 	state:Publisher("num")
 		:IgnoreIfEquals(0)
 		:Share()
-		:MapWithFunction(function(value) return floor(value / 2) end)
+		:Map(function(value) return floor(value / 2) end)
 		:IgnoreDuplicates()
 		:CallFunction(function(value) tinsert(publishedValues1, value) end)
 		:CallFunction(function(value) tinsert(publishedValues2, value) end)
