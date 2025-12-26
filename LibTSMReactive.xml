@@ -13,6 +13,7 @@
     <Script file="Source\Internal\State.lua" />
     <Script file="Source\Internal\StateSchema.lua" />
     <Script file="Source\Internal\Stream.lua" />
+    <Script file="Source\Internal\OneShot.lua" />
     <Script file="Source\Reactive.lua" />
     <Script file="Source\UIManager.lua" />
     <Script file="Source\UIBindings.lua" />
