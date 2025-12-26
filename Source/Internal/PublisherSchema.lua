@@ -109,6 +109,15 @@ function ReactivePublisherSchema:AssignToTableKey(tbl, key)
 	return self:_Commit()
 end
 
+---Maps published values to a new publisher which is owned by the current publisher.
+---@param map fun(value: any): ReactivePublisher A function which takes a published value and returns a new publisher
+---@return ReactivePublisher
+function ReactivePublisherSchema:FlatMap(map)
+	assert(not self._hasShare)
+	local _ = self.__super:FlatMap(map)
+	return self:_Commit()
+end
+
 
 
 -- ============================================================================

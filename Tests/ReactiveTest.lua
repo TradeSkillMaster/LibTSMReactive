@@ -14,9 +14,6 @@ local private = {
 
 TestState = {}
 
-function TestState:setUp()
-end
-
 function TestState:tearDown()
 	for _, cancellable in ipairs(private.cancellables) do
 		cancellable:Cancel()
@@ -357,4 +354,44 @@ function TestState:TestDisable()
 	publisher:Disable()
 	state.str = "D"
 	assertEquals(publishedValues, {"B", "B", "C"})
+end
+
+function TestState:TestFlatMap()
+	local state1 = Reactive.CreateStateSchema("TEST_FLAT_MAP_1")
+		:AddStringField("str", "A")
+		:Commit()
+		:CreateState()
+		:SetAutoStore(private.cancellables)
+	local state2 = Reactive.CreateStateSchema("TEST_FLAT_MAP_2")
+		:AddStringField("str", "A")
+		:AddNumberField("num", 1)
+		:Commit()
+		:CreateState()
+		:SetAutoStore(private.cancellables)
+
+	local publishedValues = {}
+	state1:Publisher("str")
+		:FlatMap(function(str)
+			local publisher = nil
+			for _ in state2:WithAutoStorePaused() do
+				publisher = state2:PublisherForKeys("str", "num")
+					:IgnoreIfNotEquals(str, "str")
+					:Map("num")
+			end
+			return publisher
+				:CallFunction(function(value) tinsert(publishedValues, value) end)
+		end)
+	assertEquals(publishedValues, {1})
+
+	state2.num = 2
+	assertEquals(publishedValues, {1, 2})
+
+	state2.str = "B"
+	assertEquals(publishedValues, {1, 2})
+
+	state2.num = 3
+	assertEquals(publishedValues, {1, 2})
+
+	state1.str = "B"
+	assertEquals(publishedValues, {1, 2, 3})
 end

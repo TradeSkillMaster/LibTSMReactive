@@ -39,6 +39,7 @@ local STEP = EnumType.New("PUBLISHER_STEP", {
 	CALL_METHOD = EnumType.NewValue(),
 	CALL_FUNCTION = EnumType.NewValue(),
 	ASSIGN_TO_TABLE_KEY = EnumType.NewValue(),
+	FLAT_MAP = EnumType.NewValue(),
 })
 Util.PUBLISHER_STEP = STEP
 

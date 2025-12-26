@@ -99,6 +99,8 @@ end
 function ReactivePublisher:Cancel()
 	assert(self._state == STATE.STORED)
 	self._subject:_RemovePublisher(self)
+	-- Reset the compiled publisher to cancel any cancellables it owns
+	self._compiled:Reset(self._context)
 	self:_Release()
 end
 

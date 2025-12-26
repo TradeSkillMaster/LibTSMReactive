@@ -271,6 +271,16 @@ function ReactivePublisherSchemaBase:AssignToTableKey(tbl, key)
 	return self:_AddStepHelper(STEP.ASSIGN_TO_TABLE_KEY, tbl, key)
 end
 
+---Maps published values to a new publisher which is owned by the current publisher.
+---@generic T: ReactivePublisherSchemaBase
+---@param self T
+---@param map fun(value: any): ReactivePublisher A function which takes a published value and returns a new publisher
+---@return T
+function ReactivePublisherSchemaBase:FlatMap(map)
+	---@cast self +ReactivePublisherSchemaBase
+	return self:_AddStepHelper(STEP.FLAT_MAP, map)
+end
+
 
 
 -- ============================================================================

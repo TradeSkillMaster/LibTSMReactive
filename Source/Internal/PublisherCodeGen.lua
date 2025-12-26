@@ -84,6 +84,7 @@ local TERMINAL_STEPS = {
 	[STEP.CALL_METHOD] = true,
 	[STEP.CALL_FUNCTION] = true,
 	[STEP.ASSIGN_TO_TABLE_KEY] = true,
+	[STEP.FLAT_MAP] = true,
 }
 
 ---@class PublisherStepInfo
@@ -92,6 +93,7 @@ local TERMINAL_STEPS = {
 ---@field numIgnoreContext number?
 ---@field numExtraContextArgs number?
 ---@field shareType userdata?
+---@field hasCancellable boolean?
 ---@field isTerminal boolean
 ---@field ignoreOptimization boolean
 ---@field isUnoptimizable boolean
@@ -134,13 +136,24 @@ local FUNC_ENV = setmetatable({
 -- Code Template Strings
 -- ============================================================================
 
-local RESET_CODE_TEMPLATE = [=[local function Reset(context, initialIgnoreValue)
-  for i = -1, -%d, -1 do
-    context[i] = initialIgnoreValue
+local CODE_TEMPLATE =
+[=[local function Reset(context, initialIgnoreValue)
+  for i = 1, %(numIgnoreVars)d do
+    context[-i] = initialIgnoreValue
   end
-end]=]
-local MAIN_CODE_TEMPLATE = [=[local function Main(data, context)
-  %s
+  for i = 1, %(numCancellables)d do
+    local cancellable = context["cancellable"..i]
+    context["cancellable"..i] = nil
+    if cancellable then
+      cancellable:Cancel()
+    end
+  end
+end
+local function Main(data, context)
+  %(mainCode)s
+end
+do
+  return Reset, Main
 end]=]
 
 ---@diagnostic disable: missing-fields
@@ -148,7 +161,8 @@ local STEP_INFO = {} ---@type table<EnumValue,PublisherStepInfo>
 STEP_INFO[STEP.MAP_WITH_FUNCTION] = { argTypes = { ARG_TYPE.FUNCTION, ARG_TYPE.OPTIONAL_ANY } }
 STEP_INFO[STEP.MAP_WITH_FUNCTION].codeTemplate = [=[data = context[%(contextArgIndex)d](data, context[%(contextArgIndex)d + 1])]=]
 STEP_INFO[STEP.MAP_WITH_FUNCTION_AND_KEYS] = { argTypes = { ARG_TYPE.FUNCTION, ARG_TYPE.VARARG_STRING }, numExtraContextArgs = MAX_VARARG_ARGS }
-STEP_INFO[STEP.MAP_WITH_FUNCTION_AND_KEYS].codeTemplate = [=[do
+STEP_INFO[STEP.MAP_WITH_FUNCTION_AND_KEYS].codeTemplate =
+[=[do
   local keyOffset = %(contextArgIndex)d + 1
   local numArgs = context[keyOffset]
   local valueOffset = keyOffset + numArgs
@@ -164,7 +178,8 @@ STEP_INFO[STEP.MAP_WITH_KEY].codeTemplate = [=[data = data[%(literal)s]]=]
 STEP_INFO[STEP.MAP_WITH_LOOKUP_TABLE] = { argTypes = { ARG_TYPE.TABLE } }
 STEP_INFO[STEP.MAP_WITH_LOOKUP_TABLE].codeTemplate = [=[data = context[%(contextArgIndex)d][data]]=]
 STEP_INFO[STEP.MAP_WITH_STATE_EXPRESSION] = { argTypes = { ARG_TYPE.STATE_EXPRESSION } }
-STEP_INFO[STEP.MAP_WITH_STATE_EXPRESSION].codeTemplate = [=[do
+STEP_INFO[STEP.MAP_WITH_STATE_EXPRESSION].codeTemplate =
+[=[do
   %(literal)s
 end]=]
 STEP_INFO[STEP.MAP_BOOLEAN_WITH_VALUES] = { argTypes = { ARG_TYPE.ANY, ARG_TYPE.ANY } }
@@ -283,6 +298,16 @@ STEP_INFO[STEP.CALL_FUNCTION] = { argTypes = { ARG_TYPE.FUNCTION, ARG_TYPE.OPTIO
 STEP_INFO[STEP.CALL_FUNCTION].codeTemplate = [=[context[%(contextArgIndex)d](data, context[%(contextArgIndex)d + 1])]=]
 STEP_INFO[STEP.ASSIGN_TO_TABLE_KEY] = { argTypes = { ARG_TYPE.TABLE, ARG_TYPE.STRING } }
 STEP_INFO[STEP.ASSIGN_TO_TABLE_KEY].codeTemplate = [=[context[%(contextArgIndex)d][%(literal)s] = data]=]
+STEP_INFO[STEP.FLAT_MAP] = { argTypes = { ARG_TYPE.FUNCTION }, hasCancellable = true }
+STEP_INFO[STEP.FLAT_MAP].codeTemplate =
+[=[do
+  local publisher = context[%(contextArgIndex)d](data)
+  local cancellable = context[%(cancellableKey)s]
+  if cancellable then
+    cancellable:Cancel()
+  end
+  context[%(cancellableKey)s] = publisher:Stored()
+end]=]
 do
 	for stepType, info in pairs(STEP_INFO) do
 		info.isTerminal = TERMINAL_STEPS[stepType] or false
@@ -536,36 +561,30 @@ function ReactivePublisherCodeGen.__private:_AddLiteral(value, raw)
 end
 
 function ReactivePublisherCodeGen.__private:_CompileFunction()
-	local funcCode = strjoin("\n", self:_GetResetFunctionCode(), self:_GetMainFunctionCode(), "return Reset, Main")
-	local wrapperFunc = assert(loadstring(funcCode))
-	setfenv(wrapperFunc, FUNC_ENV)
-	return wrapperFunc()
-end
-
-function ReactivePublisherCodeGen.__private:_GetResetFunctionCode()
-	return format(RESET_CODE_TEMPLATE, self._totalNumIgnoreVars)
-end
-
-function ReactivePublisherCodeGen.__private:_GetMainFunctionCode()
 	assert(not next(private.codeTemp) and private.codeIndentation == 0)
 	private.InsertBlockStartCode()
 	local numSteps = #self._steps
-	local shareDepth = 0
+	local shareDepth, numCancellables = 0, 0
 	for stepNum, info in ipairs(self._steps) do
 		private.InsertIndentedCode("-- "..self._comment[stepNum])
 		local endSharedDataBlock = false
 		if info.shareType == SHARE_TYPE.START then
+			assert(not info.hasCancellable)
 			private.InsertShareBlockStart()
 			private.InsertSharedDataBlockStart()
 			shareDepth = shareDepth + 1
 		elseif info.shareType == SHARE_TYPE.END then
+			assert(not info.hasCancellable)
 			private.InsertBlockEndCode()
 			shareDepth = shareDepth - 1
 			assert(shareDepth ~= 0 or stepNum == numSteps)
 			endSharedDataBlock = shareDepth > 0
 		else
 			assert(not info.shareType)
-			self:_CompileStep(stepNum)
+			if info.hasCancellable then
+				numCancellables = numCancellables + 1
+			end
+			self:_CompileStep(stepNum, info.codeTemplate, info.hasCancellable and numCancellables or nil)
 			endSharedDataBlock = info.isTerminal and shareDepth > 0
 		end
 		if endSharedDataBlock then
@@ -580,17 +599,23 @@ function ReactivePublisherCodeGen.__private:_GetMainFunctionCode()
 	end
 	assert(shareDepth == 0)
 	private.InsertBlockEndCode()
-	local code = format(MAIN_CODE_TEMPLATE, table.concat(private.codeTemp, "\n  "))
 	assert(private.codeIndentation == 0)
+	local funcCode = private.stringBuilder
+		:SetTemplate(CODE_TEMPLATE)
+		:SetParam("numIgnoreVars", self._totalNumIgnoreVars)
+		:SetParam("numCancellables", numCancellables)
+		:SetParam("mainCode", table.concat(private.codeTemp, "\n  "))
+		:Commit()
 	wipe(private.codeTemp)
-	return code
+
+	local wrapperFunc = assert(loadstring(funcCode))
+	setfenv(wrapperFunc, FUNC_ENV)
+	return wrapperFunc()
 end
 
-function ReactivePublisherCodeGen.__private:_CompileStep(stepNum)
+function ReactivePublisherCodeGen.__private:_CompileStep(stepNum, codeTemplate, cancellableIndex)
 	private.stringBuilder = private.stringBuilder or StringBuilder.Create()
-	local info = self._steps[stepNum]
-	assert(info.codeTemplate)
-	private.stringBuilder:SetTemplate(info.codeTemplate)
+	private.stringBuilder:SetTemplate(codeTemplate)
 	local literal = self._literals[stepNum]
 	if literal then
 		private.stringBuilder:SetParam("literal", literal)
@@ -602,16 +627,29 @@ function ReactivePublisherCodeGen.__private:_CompileStep(stepNum)
 		else
 			assert(private.stringBuilder:GetParamCount("literal2") == 0)
 		end
+	else
+		assert(private.stringBuilder:GetParamCount("literal") == 0)
+		assert(private.stringBuilder:GetParamCount("literal2") == 0)
 	end
 	local firstArgIndex = self._firstArgIndex[stepNum]
 	if firstArgIndex then
 		private.stringBuilder:SetParam("contextArgIndex", firstArgIndex)
 		assert(private.stringBuilder:GetParamCount("contextArgIndex") > 0)
+	else
+		assert(private.stringBuilder:GetParamCount("contextArgIndex") == 0)
 	end
 	local firstIgnoreVarIndex = self._firstIgnoreVarIndex[stepNum]
 	if firstIgnoreVarIndex then
 		private.stringBuilder:SetParam("ignoreIndex", firstIgnoreVarIndex)
 		assert(private.stringBuilder:GetParamCount("ignoreIndex") > 0)
+	else
+		assert(private.stringBuilder:GetParamCount("ignoreIndex") == 0)
+	end
+	if cancellableIndex then
+		private.stringBuilder:SetParam("cancellableKey", "\"cancellable"..cancellableIndex.."\"")
+		assert(private.stringBuilder:GetParamCount("cancellableKey") > 0)
+	else
+		assert(private.stringBuilder:GetParamCount("cancellableKey") == 0)
 	end
 	private.InsertIndentedCode(private.FixIndentation(private.stringBuilder:Commit(), private.codeIndentation + 1))
 end
