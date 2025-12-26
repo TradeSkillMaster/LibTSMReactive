@@ -8,6 +8,7 @@ local LibTSMReactive = select(2, ...).LibTSMReactive
 local Reactive = LibTSMReactive:Init("Reactive")
 local ReactiveStateSchema = LibTSMReactive:IncludeClassType("ReactiveStateSchema")
 local ReactiveStream = LibTSMReactive:IncludeClassType("ReactiveStream")
+local OneShot = LibTSMReactive:IncludeClassType("OneShot")
 
 
 
@@ -27,4 +28,13 @@ end
 ---@return ReactiveStream
 function Reactive.GetStream(initialValueFunc)
 	return ReactiveStream.Get(initialValueFunc)
+end
+
+---Gets a publisher which publishes a single initial value and never again.
+---@param value any The value to publish
+---@param autoDisable? boolean Whether or not to automatically disable the publisher
+---@param autoStore? table The table to store the publisher in automatically
+---@return ReactivePublisherSchema
+function Reactive.GetOneShotPublisher(value, autoDisable, autoStore)
+	return OneShot.GetPublisher(value, autoDisable, autoStore)
 end

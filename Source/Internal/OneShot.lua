@@ -1,0 +1,99 @@
+-- ------------------------------------------------------------------------------ --
+--                                 LibTSMReactive                                 --
+--               https://github.com/TradeSkillMaster/LibTSMReactive               --
+--         Licensed under the MIT license. See LICENSE.txt for more info.         --
+-- ------------------------------------------------------------------------------ --
+
+local LibTSMReactive = select(2, ...).LibTSMReactive
+local OneShot = LibTSMReactive:DefineInternalClassType("OneShot")
+local ReactivePublisherSchema = LibTSMReactive:IncludeClassType("ReactivePublisherSchema")
+local private = {
+	cache = {},
+}
+
+---@class OneShot: ReactiveSubject
+
+
+
+-- ============================================================================
+-- Static Class Functions
+-- ============================================================================
+
+---Gets a one-shot publisher.
+---@param value any The value to publish
+---@param autoDisable? boolean Whether or not to automatically disable the publisher
+---@param autoStore? table The table to store the publisher in automatically
+---@return ReactivePublisherSchema
+function OneShot.__static.GetPublisher(value, autoDisable, autoStore)
+	assert(value ~= nil)
+	local oneShot = private.cache[value] or OneShot(value)
+	return oneShot:Publisher(autoDisable, autoStore)
+end
+
+
+
+-- ============================================================================
+-- Meta Class Methods
+-- ============================================================================
+
+function OneShot.__private:__init(value)
+	self._value = value
+end
+
+
+
+-- ============================================================================
+-- Public Class Methods
+-- ============================================================================
+
+---Creates a new publisher for the one-shot.
+---@param autoDisable? boolean Automatically disable the publisher
+---@param autoStore? table The table to store new publishers in
+---@return ReactivePublisherSchema
+function OneShot:Publisher(autoDisable, autoStore)
+	local schema = ReactivePublisherSchema.Get(self)
+	if autoDisable then
+		schema:_AutoDisable() ---@diagnostic disable-line invisible
+	end
+	if autoStore then
+		schema:_AutoStore(autoStore) ---@diagnostic disable-line invisible
+	end
+	return schema
+end
+
+
+
+-- ============================================================================
+-- Private Class Methods
+-- ============================================================================
+
+---@private
+---@param publisher ReactivePublisher
+function OneShot:_AddPublisher(publisher)
+	-- Do nothing
+end
+
+---@private
+---@param publisher ReactivePublisher
+function OneShot:_RemovePublisher(publisher)
+	-- Do nothing
+end
+
+---@private
+---@param publisher ReactivePublisher
+---@param disabled boolean
+function OneShot:_SetPublisherDisabled(publisher, disabled)
+	-- Do nothing
+end
+
+---@private
+---@return any
+function OneShot:_GetInitialValue()
+	return self._value
+end
+
+---@private
+---@return boolean
+function OneShot:_RequiresOptimized()
+	return false
+end
