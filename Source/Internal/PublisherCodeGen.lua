@@ -84,7 +84,8 @@ local TERMINAL_STEPS = {
 	[STEP.CALL_METHOD] = true,
 	[STEP.CALL_FUNCTION] = true,
 	[STEP.ASSIGN_TO_TABLE_KEY] = true,
-	[STEP.FLAT_MAP] = true,
+	[STEP.FLAT_MAP_FUNCTION] = true,
+	[STEP.FLAT_MAP_METHOD] = true,
 }
 
 ---@class PublisherStepInfo
@@ -298,10 +299,26 @@ STEP_INFO[STEP.CALL_FUNCTION] = { argTypes = { ARG_TYPE.FUNCTION, ARG_TYPE.OPTIO
 STEP_INFO[STEP.CALL_FUNCTION].codeTemplate = [=[context[%(contextArgIndex)d](data, context[%(contextArgIndex)d + 1])]=]
 STEP_INFO[STEP.ASSIGN_TO_TABLE_KEY] = { argTypes = { ARG_TYPE.TABLE, ARG_TYPE.STRING } }
 STEP_INFO[STEP.ASSIGN_TO_TABLE_KEY].codeTemplate = [=[context[%(contextArgIndex)d][%(literal)s] = data]=]
-STEP_INFO[STEP.FLAT_MAP] = { argTypes = { ARG_TYPE.FUNCTION }, hasCancellable = true }
-STEP_INFO[STEP.FLAT_MAP].codeTemplate =
+STEP_INFO[STEP.FLAT_MAP_FUNCTION] = { argTypes = { ARG_TYPE.FUNCTION, ARG_TYPE.OPTIONAL_ANY }, hasCancellable = true }
+STEP_INFO[STEP.FLAT_MAP_FUNCTION].codeTemplate =
 [=[do
-  local publisher = context[%(contextArgIndex)d](data)
+  local publisher = context[%(contextArgIndex)d](data, context[%(contextArgIndex)d + 1])
+  local cancellable = context[%(cancellableKey)s]
+  if cancellable then
+    cancellable:Cancel()
+  end
+  context[%(cancellableKey)s] = publisher:Stored()
+end]=]
+STEP_INFO[STEP.FLAT_MAP_METHOD] = { argTypes = { ARG_TYPE.TABLE, ARG_TYPE.STRING, ARG_TYPE.OPTIONAL_ANY }, hasCancellable = true }
+STEP_INFO[STEP.FLAT_MAP_METHOD].codeTemplate =
+[=[do
+  local obj = context[%(contextArgIndex)d]
+  local methodName = %(literal)s
+  local func = obj[methodName]
+  if not func then
+    error("Method ("..methodName..") does not exist on object ("..tostring(obj)..")")
+  end
+  local publisher = func(obj, data, context[%(contextArgIndex)d + 1])
   local cancellable = context[%(cancellableKey)s]
   if cancellable then
     cancellable:Cancel()

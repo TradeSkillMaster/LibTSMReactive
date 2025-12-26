@@ -110,11 +110,13 @@ function ReactivePublisherSchema:AssignToTableKey(tbl, key)
 end
 
 ---Maps published values to a new publisher which is owned by the current publisher.
----@param map fun(value: any): ReactivePublisher A function which takes a published value and returns a new publisher
+---@param map table|PublisherFlatMapFunc A function which takes a published value and returns a new publisher or an object to call a method on which does the same
+---@param methodOrArg? string|any The method name to call if an object is passed for `map` or an extra argument to pass to the function
+---@param methodArg? string An extra argument to pass to the method (if applicable)
 ---@return ReactivePublisher
-function ReactivePublisherSchema:FlatMap(map)
+function ReactivePublisherSchema:FlatMap(map, methodOrArg, methodArg)
 	assert(not self._hasShare)
-	local _ = self.__super:FlatMap(map)
+	local _ = self.__super:FlatMap(map, methodOrArg, methodArg)
 	return self:_Commit()
 end
 

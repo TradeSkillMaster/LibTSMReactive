@@ -127,9 +127,7 @@ end
 
 ---@private
 function ReactivePublisher:_HandleData(data, optimizeKey)
-	if not self._compiled then
-		error("Not compiled")
-	end
+	assert(self._compiled)
 	if optimizeKey and self._optimizeResult and not self._optimizeKeys[optimizeKey] then
 		return
 	end

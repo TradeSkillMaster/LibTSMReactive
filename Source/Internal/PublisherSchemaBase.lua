@@ -10,6 +10,7 @@ local Util = LibTSMReactive:Include("Reactive.Util")
 local STEP = Util.PUBLISHER_STEP
 
 ---@alias PublisherMapFunc fun(value: any, arg: any): any
+---@alias PublisherFlatMapFunc fun(value: any): ReactivePublisher
 
 
 
@@ -274,11 +275,23 @@ end
 ---Maps published values to a new publisher which is owned by the current publisher.
 ---@generic T: ReactivePublisherSchemaBase
 ---@param self T
----@param map fun(value: any): ReactivePublisher A function which takes a published value and returns a new publisher
+---@param map table|PublisherFlatMapFunc A function which takes a published value and returns a new publisher or an object to call a method on which does the same
+---@param methodOrArg? string|any The method name to call if an object is passed for `map` or an extra argument to pass to the function
+---@param methodArg? string An extra argument to pass to the method (if applicable)
 ---@return T
-function ReactivePublisherSchemaBase:FlatMap(map)
+function ReactivePublisherSchemaBase:FlatMap(map, methodOrArg, methodArg)
 	---@cast self +ReactivePublisherSchemaBase
-	return self:_AddStepHelper(STEP.FLAT_MAP, map)
+	local mapType = type(map)
+	if mapType == "function" then
+		assert(methodArg == nil)
+		self:_AddStepHelper(STEP.FLAT_MAP_FUNCTION, map, methodOrArg)
+	elseif mapType == "table" then
+		assert(type(methodOrArg) == "string")
+		self:_AddStepHelper(STEP.FLAT_MAP_METHOD, map, methodOrArg, methodArg)
+	else
+		error("Invalid map type: "..tostring(map), 2)
+	end
+	return self
 end
 
 
