@@ -1,0 +1,219 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>UIBindings &mdash; LibTSMReactive  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../_static/lua.css" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="UIManager" href="ui_manager.html" />
+    <link rel="prev" title="ReactivePublisher" href="publisher.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            LibTSMReactive
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../index.html">Home</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">API</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="reactive.html">Reactive</a></li>
+<li class="toctree-l2"><a class="reference internal" href="state_schema.html">ReactiveStateSchema</a></li>
+<li class="toctree-l2"><a class="reference internal" href="state.html">ReactiveState</a></li>
+<li class="toctree-l2"><a class="reference internal" href="stream.html">ReactiveStream</a></li>
+<li class="toctree-l2"><a class="reference internal" href="publisher_schema.html">ReactivePublisherSchema</a></li>
+<li class="toctree-l2"><a class="reference internal" href="publisher.html">ReactivePublisher</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">UIBindings</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#example">Example</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#memory-management">Memory Management</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#api">API</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#lua-UIBindings"><code class="docutils literal notranslate"><span class="pre">UIBindings</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="ui_manager.html">UIManager</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">LibTSMReactive</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="index.html">API</a></li>
+      <li class="breadcrumb-item active">UIBindings</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="uibindings">
+<h1>UIBindings<a class="headerlink" href="#uibindings" title="Link to this heading"></a></h1>
+<p>It’s common to have some lower-level service code which is responding to game events to generate
+updates to various state values. This service code acts as a single producer of underlying state
+values and should be completely independent from consumers of them (i.e. different UI windows).
+The <code class="docutils literal notranslate"><span class="pre">UIBindings</span></code> class aims to provide a mechanism to allow multiple consuemrs to hook into the
+values being produced in this paradigm.</p>
+<section id="example">
+<h2>Example<a class="headerlink" href="#example" title="Link to this heading"></a></h2>
+<p>The following demonstrates a simple usage of the UIBindings class.</p>
+<div class="highlight-lua notranslate"><div class="highlight"><pre><span></span><span class="c1">-- PlayerHealthMonitor.lua</span>
+<span class="kd">local</span><span class="w"> </span><span class="nv">MyModule</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">select</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="p">...).</span><span class="nv">MyModule</span>
+<span class="kd">local</span><span class="w"> </span><span class="nv">PlayerHealthMonitor</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">MyModule</span><span class="p">:</span><span class="nf">Init</span><span class="p">(</span><span class="s2">&quot;PlayerHealthMonitor&quot;</span><span class="p">)</span>
+<span class="kd">local</span><span class="w"> </span><span class="nv">UIBindings</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">MyModule</span><span class="p">:</span><span class="nf">From</span><span class="p">(</span><span class="s2">&quot;LibTSMReactive&quot;</span><span class="p">):</span><span class="nf">IncludeClassType</span><span class="p">(</span><span class="s2">&quot;UIBindings&quot;</span><span class="p">)</span>
+
+<span class="kd">local</span><span class="w"> </span><span class="nv">bindings</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">UIBindings</span><span class="p">.</span><span class="nf">Create</span><span class="p">()</span>
+
+<span class="kr">function</span><span class="w"> </span><span class="nc">PlayerHealthMonitor</span><span class="p">.</span><span class="nf">BindHealthValue</span><span class="p">(</span><span class="nv">state</span><span class="p">,</span><span class="w"> </span><span class="nv">key</span><span class="p">)</span>
+<span class="w">   </span><span class="nv">bindings</span><span class="p">:</span><span class="nf">Add</span><span class="p">(</span><span class="s2">&quot;HEALTH_VAUE&quot;</span><span class="p">,</span><span class="w"> </span><span class="nv">state</span><span class="p">,</span><span class="w"> </span><span class="nv">key</span><span class="p">)</span>
+<span class="kr">end</span>
+
+<span class="kd">local</span><span class="w"> </span><span class="kr">function</span><span class="w"> </span><span class="nf">OnHealthUpdateEvent</span><span class="p">(</span><span class="nv">health</span><span class="p">)</span>
+<span class="w">   </span><span class="nv">bindings</span><span class="p">:</span><span class="nf">Process</span><span class="p">(</span><span class="s2">&quot;HEALTH_VALUE&quot;</span><span class="p">,</span><span class="w"> </span><span class="nv">health</span><span class="p">)</span>
+<span class="kr">end</span>
+
+<span class="c1">-- MyUIFile.lua</span>
+<span class="c1">-- ...</span>
+<span class="kd">local</span><span class="w"> </span><span class="nv">state</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">...</span><span class="w"> </span><span class="c1">-- The local `ReactiveState` object with a &quot;health&quot; key</span>
+
+<span class="c1">-- Update our local state&#39;s health value based on values from the PlayerHealthMonitor module.</span>
+<span class="nv">PlayerHealthMonitor</span><span class="p">.</span><span class="nf">BindHealthValue</span><span class="p">(</span><span class="nv">state</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;health&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="memory-management">
+<h2>Memory Management<a class="headerlink" href="#memory-management" title="Link to this heading"></a></h2>
+<p>The <code class="docutils literal notranslate"><span class="pre">UIBindings</span></code> objects are intended to never be GC’d and have a static lifecycle (i.e. one
+that’s equal to the lifecycle of the application), but there is nothing preventing them from being
+GC’d.</p>
+</section>
+<section id="api">
+<h2>API<a class="headerlink" href="#api" title="Link to this heading"></a></h2>
+<dl class="lua class">
+<dt class="sig sig-object lua" id="lua-UIBindings">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">UIBindings</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">Class</span></code><a class="headerlink" href="#lua-UIBindings" title="Link to this definition"></a><br /></dt>
+<dd><dl class="lua staticmethod">
+<dt class="sig sig-object lua" id="lua-UIBindings.Create">
+<em class="property"><span class="k"><span class="pre">staticmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">Create</span></span><span class="p"><span class="pre">(</span></span><span class="p"><span class="pre">)</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#lua-UIBindings" title="UIBindings"><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">UIBindings</span></code></a><a class="headerlink" href="#lua-UIBindings.Create" title="Link to this definition"></a><br /></dt>
+<dd><p>Creates a new UI bindings object.</p>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="lua method">
+<dt class="sig sig-object lua" id="lua-UIBindings.Add">
+<span class="sig-name descname"><span class="pre">Add</span></span><span class="p"><span class="pre">(</span></span><br /><span class="w">&#160;&#160;&#160; </span><span class="n"><span class="pre">self</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#lua-UIBindings" title="UIBindings"><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">UIBindings</span></code></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><br /><span class="w">&#160;&#160;&#160; </span><span class="n"><span class="pre">bindKey</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">string</span></code><span class="p"><span class="pre">,</span></span><span class="w"> </span><br /><span class="w">&#160;&#160;&#160; </span><span class="n"><span class="pre">state</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="state.html#lua-ReactiveState" title="ReactiveState"><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">ReactiveState</span></code></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><br /><span class="w">&#160;&#160;&#160; </span><span class="n"><span class="pre">stateKey</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">string</span></code><br /><span class="p"><span class="pre">)</span></span><a class="headerlink" href="#lua-UIBindings.Add" title="Link to this definition"></a><br /></dt>
+<dd><p>Adds a binding.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>bindKey</strong> (<code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">string</span></code>) – The binding key</p></li>
+<li><p><strong>state</strong> (<a class="reference internal" href="state.html#lua-ReactiveState" title="ReactiveState"><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">ReactiveState</span></code></a>) – The state to store the value in</p></li>
+<li><p><strong>stateKey</strong> (<code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">string</span></code>) – The state key to store the value at</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="lua method">
+<dt class="sig sig-object lua" id="lua-UIBindings.Clear">
+<span class="sig-name descname"><span class="pre">Clear</span></span><span class="p"><span class="pre">(</span></span><span class="n"><span class="pre">self</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#lua-UIBindings" title="UIBindings"><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">UIBindings</span></code></a><span class="p"><span class="pre">)</span></span><a class="headerlink" href="#lua-UIBindings.Clear" title="Link to this definition"></a><br /></dt>
+<dd><p>Clears all registered bindings.</p>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="lua method">
+<dt class="sig sig-object lua" id="lua-UIBindings.Process">
+<span class="sig-name descname"><span class="pre">Process</span></span><span class="p"><span class="pre">(</span></span><span class="n"><span class="pre">self</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#lua-UIBindings" title="UIBindings"><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">UIBindings</span></code></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="n"><span class="pre">bindKey</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">string</span></code><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">any</span></code><span class="p"><span class="pre">)</span></span><a class="headerlink" href="#lua-UIBindings.Process" title="Link to this definition"></a><br /></dt>
+<dd><p>Processes the binds for an action and updates the bound state keys.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>bindKey</strong> (<code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">string</span></code>) – The binding key to update</p></li>
+<li><p><strong>value</strong> (<code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">any</span></code>) – The value to set</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="publisher.html" class="btn btn-neutral float-left" title="ReactivePublisher" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="ui_manager.html" class="btn btn-neutral float-right" title="UIManager" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, TradeSkillMaster LLC.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

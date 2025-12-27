@@ -1,0 +1,223 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ReactiveStream &mdash; LibTSMReactive  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../_static/lua.css" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="ReactivePublisherSchema" href="publisher_schema.html" />
+    <link rel="prev" title="ReactiveState" href="state.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            LibTSMReactive
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../index.html">Home</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">API</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="reactive.html">Reactive</a></li>
+<li class="toctree-l2"><a class="reference internal" href="state_schema.html">ReactiveStateSchema</a></li>
+<li class="toctree-l2"><a class="reference internal" href="state.html">ReactiveState</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">ReactiveStream</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#example">Example</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#memory-management">Memory Management</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#api">API</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#lua-ReactiveStream"><code class="docutils literal notranslate"><span class="pre">ReactiveStream</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="publisher_schema.html">ReactivePublisherSchema</a></li>
+<li class="toctree-l2"><a class="reference internal" href="publisher.html">ReactivePublisher</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ui_bindings.html">UIBindings</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ui_manager.html">UIManager</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">LibTSMReactive</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="index.html">API</a></li>
+      <li class="breadcrumb-item active">ReactiveStream</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="reactivestream">
+<h1>ReactiveStream<a class="headerlink" href="#reactivestream" title="Link to this heading"></a></h1>
+<p>The <code class="docutils literal notranslate"><span class="pre">ReactiveStream</span></code> object provides a mechanism for subscribing to a stream of values. This can
+be useful when the values are more temporal as opposed to state properties. Most usefully, the same
+value can be sent consecutively without the deduplication which <a class="reference internal" href="state.html"><span class="doc">ReactiveState</span></a>
+provides.</p>
+<section id="example">
+<h2>Example<a class="headerlink" href="#example" title="Link to this heading"></a></h2>
+<p>Below is a simple example which shows how a stream can be used to handle character events.</p>
+<div class="highlight-lua notranslate"><div class="highlight"><pre><span></span><span class="kd">local</span><span class="w"> </span><span class="nv">eventStream</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">Reactive</span><span class="p">.</span><span class="nf">GetStream</span><span class="p">(</span><span class="kr">function</span><span class="p">()</span><span class="w"> </span><span class="kr">return</span><span class="w"> </span><span class="kc">nil</span><span class="w"> </span><span class="kr">end</span><span class="p">)</span>
+
+<span class="nv">eventStream</span><span class="p">:</span><span class="nf">Publisher</span><span class="p">()</span>
+<span class="w">   </span><span class="p">:</span><span class="nf">IgnoreIfNotEquals</span><span class="p">(</span><span class="s2">&quot;JUMPED&quot;</span><span class="p">)</span>
+<span class="w">   </span><span class="p">:</span><span class="nf">CallFunction</span><span class="p">(</span><span class="kr">function</span><span class="p">()</span><span class="w"> </span><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Jumped!&quot;</span><span class="p">)</span><span class="w"> </span><span class="kr">end</span><span class="p">)</span>
+<span class="w">   </span><span class="p">:</span><span class="nf">Stored</span><span class="p">()</span>
+<span class="nv">eventStream</span><span class="p">:</span><span class="nf">Publisher</span><span class="p">()</span>
+<span class="w">   </span><span class="p">:</span><span class="nf">IgnoreIfNotEquals</span><span class="p">(</span><span class="s2">&quot;ATTACKED&quot;</span><span class="p">)</span>
+<span class="w">   </span><span class="p">:</span><span class="nf">CallFunction</span><span class="p">(</span><span class="kr">function</span><span class="p">()</span><span class="w"> </span><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Attacked!&quot;</span><span class="p">)</span><span class="w"> </span><span class="kr">end</span><span class="p">)</span>
+<span class="w">   </span><span class="p">:</span><span class="nf">Stored</span><span class="p">()</span>
+
+<span class="nv">eventStream</span><span class="p">:</span><span class="nf">Send</span><span class="p">(</span><span class="s2">&quot;JUMPED&quot;</span><span class="p">)</span><span class="w"> </span><span class="c1">-- &quot;Jumped!&quot;</span>
+<span class="nv">eventStream</span><span class="p">:</span><span class="nf">Send</span><span class="p">(</span><span class="s2">&quot;JUMPED&quot;</span><span class="p">)</span><span class="w"> </span><span class="c1">-- &quot;Jumped!&quot;</span>
+<span class="nv">eventStream</span><span class="p">:</span><span class="nf">Send</span><span class="p">(</span><span class="s2">&quot;ATTACKED&quot;</span><span class="p">)</span><span class="w"> </span><span class="c1">-- &quot;Attacked!&quot;</span>
+</pre></div>
+</div>
+</section>
+<section id="memory-management">
+<h2>Memory Management<a class="headerlink" href="#memory-management" title="Link to this heading"></a></h2>
+<p>The lifecycle of stream objects is owned by LibTSMReactive, but they may be long-living. They are
+acquired via the <code class="docutils literal notranslate"><span class="pre">Reactive.GetStream()</span></code> function and the application may call the <code class="docutils literal notranslate"><span class="pre">:Release()</span></code>
+method in order to release them back to LibTSMReactive for recycling.</p>
+</section>
+<section id="api">
+<h2>API<a class="headerlink" href="#api" title="Link to this heading"></a></h2>
+<dl class="lua class">
+<dt class="sig sig-object lua" id="lua-ReactiveStream">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">ReactiveStream</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">Class</span></code><a class="headerlink" href="#lua-ReactiveStream" title="Link to this definition"></a><br /></dt>
+<dd><dl class="lua staticmethod">
+<dt class="sig sig-object lua" id="lua-ReactiveStream.Get">
+<em class="property"><span class="k"><span class="pre">staticmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">Get</span></span><span class="p"><span class="pre">(</span></span><span class="n"><span class="pre">initialValueFunc</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="k"><span class="pre">fun</span></span><span class="p"><span class="pre">(</span></span><span class="p"><span class="pre">)</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">any</span></code><span class="p"><span class="pre">)</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#lua-ReactiveStream" title="ReactiveStream"><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">ReactiveStream</span></code></a><a class="headerlink" href="#lua-ReactiveStream.Get" title="Link to this definition"></a><br /></dt>
+<dd><p>Gets a stream object.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>initialValueFunc</strong> (<span class="k">fun</span><span class="p">(</span><span class="p">)</span><span class="p">:</span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">any</span></code>) – A function to get the initial value to send to new publishers</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="lua method">
+<dt class="sig sig-object lua" id="lua-ReactiveStream.Release">
+<span class="sig-name descname"><span class="pre">Release</span></span><span class="p"><span class="pre">(</span></span><span class="n"><span class="pre">self</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#lua-ReactiveStream" title="ReactiveStream"><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">ReactiveStream</span></code></a><span class="p"><span class="pre">)</span></span><a class="headerlink" href="#lua-ReactiveStream.Release" title="Link to this definition"></a><br /></dt>
+<dd><p>Releases the stream.</p>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="lua method">
+<dt class="sig sig-object lua" id="lua-ReactiveStream.Publisher">
+<span class="sig-name descname"><span class="pre">Publisher</span></span><span class="p"><span class="pre">(</span></span><span class="n"><span class="pre">self</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#lua-ReactiveStream" title="ReactiveStream"><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">ReactiveStream</span></code></a><span class="p"><span class="pre">)</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="publisher_schema.html#lua-ReactivePublisherSchema" title="ReactivePublisherSchema"><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">ReactivePublisherSchema</span></code></a><a class="headerlink" href="#lua-ReactiveStream.Publisher" title="Link to this definition"></a><br /></dt>
+<dd><p>Creates a new publisher for the stream.</p>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="lua method">
+<dt class="sig sig-object lua" id="lua-ReactiveStream.Send">
+<span class="sig-name descname"><span class="pre">Send</span></span><span class="p"><span class="pre">(</span></span><span class="n"><span class="pre">self</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#lua-ReactiveStream" title="ReactiveStream"><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">ReactiveStream</span></code></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">any</span></code><span class="p"><span class="pre">)</span></span><a class="headerlink" href="#lua-ReactiveStream.Send" title="Link to this definition"></a><br /></dt>
+<dd><p>Sends a new data value the stream’s publishers.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>data</strong> (<code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">any</span></code>) – The data to send</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="lua method">
+<dt class="sig sig-object lua" id="lua-ReactiveStream.SetNoPublishersCallback">
+<span class="sig-name descname"><span class="pre">SetNoPublishersCallback</span></span><span class="p"><span class="pre">(</span></span><br /><span class="w">&#160;&#160;&#160; </span><span class="n"><span class="pre">self</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#lua-ReactiveStream" title="ReactiveStream"><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">ReactiveStream</span></code></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><br /><span class="w">&#160;&#160;&#160; </span><span class="n"><span class="pre">handler</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="k"><span class="pre">fun</span></span><span class="p"><span class="pre">(</span></span><span class="n"><span class="pre">stream</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#lua-ReactiveStream" title="ReactiveStream"><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">ReactiveStream</span></code></a><span class="p"><span class="pre">)</span></span><br /><span class="p"><span class="pre">)</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#lua-ReactiveStream" title="ReactiveStream"><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">ReactiveStream</span></code></a><a class="headerlink" href="#lua-ReactiveStream.SetNoPublishersCallback" title="Link to this definition"></a><br /></dt>
+<dd><p>Sets a callback for when there are no remaining publishers.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>handler</strong> (<span class="k">fun</span><span class="p">(</span><span class="n">stream</span><span class="p">:</span><span class="w"> </span><a class="reference internal" href="#lua-ReactiveStream" title="ReactiveStream"><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">ReactiveStream</span></code></a><span class="p">)</span>) – The handler function</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="lua method">
+<dt class="sig sig-object lua" id="lua-ReactiveStream.GetNumPublishers">
+<span class="sig-name descname"><span class="pre">GetNumPublishers</span></span><span class="p"><span class="pre">(</span></span><span class="n"><span class="pre">self</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#lua-ReactiveStream" title="ReactiveStream"><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">ReactiveStream</span></code></a><span class="p"><span class="pre">)</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">number</span></code><a class="headerlink" href="#lua-ReactiveStream.GetNumPublishers" title="Link to this definition"></a><br /></dt>
+<dd><p>Gets the number of publishers on the stream.</p>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="state.html" class="btn btn-neutral float-left" title="ReactiveState" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="publisher_schema.html" class="btn btn-neutral float-right" title="ReactivePublisherSchema" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, TradeSkillMaster LLC.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
