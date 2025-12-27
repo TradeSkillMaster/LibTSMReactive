@@ -4,7 +4,7 @@ LibTSMReactive
 The Reactive framework is based around observable state objects. One of the primary goals of
 the Reactive framework is make it easy to build state-driven UI, where the UI can respond to
 specific state fields being updated without needing to completely rerender the entire UI. For
-example, if we have a UI that displays the player's current amount of gold among other play
+example, if we have a UI that displays the player's current amount of gold among other player
 statistics, we only need to update the player gold text content when that value changes,
 rather than redrawing the entire window.
 
@@ -35,7 +35,7 @@ If you're using the `BigWigs packager`_, you can reference LibTSMReactive as an 
 
 Otherwise, you can download the `latest release directly from GitHub`_.
 
-.. _BigWigs packager: https://github.com/rossnichols/LibSerialize
+.. _BigWigs packager: https://github.com/BigWigsMods/packager
 .. _latest release directly from GitHub: https://github.com/TradeSkillMaster/LibTSMReactive/releases
 
 Overview by Example
@@ -173,11 +173,11 @@ ways to create a publisher from a state object, which are covered in the
 License and Contributions
 -------------------------
 
-LibTSMUtil is licensed under the MIT license. See LICENSE.txt for more information. If you would
-like to contribute to LibTSMUtil, opening an issue or submitting a pull request against the
-`LibTSMUtil GitHub project`_ is highly encouraged.
+LibTSMReactive is licensed under the MIT license. See LICENSE.txt for more information. If you
+would like to contribute to LibTSMReactive, opening an issue or submitting a pull request against
+the `LibTSMReactive GitHub project`_ is highly encouraged.
 
-.. _LibTSMUtil GitHub project: https://github.com/TradeSkillMaster/LibTSMUtil
+.. _LibTSMReactive GitHub project: https://github.com/TradeSkillMaster/LibTSMReactive
 
 .. toctree::
    :hidden:
