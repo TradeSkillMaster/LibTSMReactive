@@ -84,8 +84,8 @@ local TERMINAL_STEPS = {
 	[STEP.CALL_METHOD] = true,
 	[STEP.CALL_FUNCTION] = true,
 	[STEP.ASSIGN_TO_TABLE_KEY] = true,
-	[STEP.FLAT_MAP_FUNCTION] = true,
-	[STEP.FLAT_MAP_METHOD] = true,
+	[STEP.FLAT_MAP_CALL_FUNCTION] = true,
+	[STEP.FLAT_MAP_CALL_METHOD] = true,
 }
 
 ---@class PublisherStepInfo
@@ -299,31 +299,29 @@ STEP_INFO[STEP.CALL_FUNCTION] = { argTypes = { ARG_TYPE.FUNCTION, ARG_TYPE.OPTIO
 STEP_INFO[STEP.CALL_FUNCTION].codeTemplate = [=[context[%(contextArgIndex)d](data, context[%(contextArgIndex)d + 1])]=]
 STEP_INFO[STEP.ASSIGN_TO_TABLE_KEY] = { argTypes = { ARG_TYPE.TABLE, ARG_TYPE.STRING } }
 STEP_INFO[STEP.ASSIGN_TO_TABLE_KEY].codeTemplate = [=[context[%(contextArgIndex)d][%(literal)s] = data]=]
-STEP_INFO[STEP.FLAT_MAP_FUNCTION] = { argTypes = { ARG_TYPE.FUNCTION, ARG_TYPE.OPTIONAL_ANY }, hasCancellable = true }
-STEP_INFO[STEP.FLAT_MAP_FUNCTION].codeTemplate =
+STEP_INFO[STEP.FLAT_MAP_CALL_FUNCTION] = { argTypes = { ARG_TYPE.FUNCTION, ARG_TYPE.FUNCTION, ARG_TYPE.OPTIONAL_ANY }, hasCancellable = true }
+STEP_INFO[STEP.FLAT_MAP_CALL_FUNCTION].codeTemplate =
 [=[do
-  local publisher = context[%(contextArgIndex)d](data, context[%(contextArgIndex)d + 1])
   local cancellable = context[%(cancellableKey)s]
   if cancellable then
     cancellable:Cancel()
   end
-  context[%(cancellableKey)s] = publisher:Stored()
+  local publisher = context[%(contextArgIndex)d](data)
+  context[%(cancellableKey)s] = publisher
+    :CallFunction(context[%(contextArgIndex)d + 1], context[%(contextArgIndex)d + 2])
+    :Stored()
 end]=]
-STEP_INFO[STEP.FLAT_MAP_METHOD] = { argTypes = { ARG_TYPE.TABLE, ARG_TYPE.STRING, ARG_TYPE.OPTIONAL_ANY }, hasCancellable = true }
-STEP_INFO[STEP.FLAT_MAP_METHOD].codeTemplate =
+STEP_INFO[STEP.FLAT_MAP_CALL_METHOD] = { argTypes = { ARG_TYPE.FUNCTION, ARG_TYPE.TABLE, ARG_TYPE.STRING, ARG_TYPE.OPTIONAL_ANY }, hasCancellable = true }
+STEP_INFO[STEP.FLAT_MAP_CALL_METHOD].codeTemplate =
 [=[do
-  local obj = context[%(contextArgIndex)d]
-  local methodName = %(literal)s
-  local func = obj[methodName]
-  if not func then
-    error("Method ("..methodName..") does not exist on object ("..tostring(obj)..")")
-  end
-  local publisher = func(obj, data, context[%(contextArgIndex)d + 1])
   local cancellable = context[%(cancellableKey)s]
   if cancellable then
     cancellable:Cancel()
   end
-  context[%(cancellableKey)s] = publisher:Stored()
+  local publisher = context[%(contextArgIndex)d](data)
+  context[%(cancellableKey)s] = publisher
+    :CallMethod(context[%(contextArgIndex)d + 1], %(literal)s, context[%(contextArgIndex)d + 2])
+    :Stored()
 end]=]
 do
 	for stepType, info in pairs(STEP_INFO) do
@@ -411,7 +409,7 @@ function ReactivePublisherCodeGen:AddStep(stepType, ...)
 	if info.shareType then
 		if info.shareType == SHARE_TYPE.START then
 			-- Can't have a start share step right after another share step
-			assert(not self._steps[stepNum - 1].shareType)
+			assert(stepNum == 1 or not self._steps[stepNum - 1].shareType)
 		end
 		if self._optimizeResult == nil then
 			self._optimizeResult = false

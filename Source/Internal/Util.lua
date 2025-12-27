@@ -39,8 +39,8 @@ local STEP = EnumType.New("PUBLISHER_STEP", {
 	CALL_METHOD = EnumType.NewValue(),
 	CALL_FUNCTION = EnumType.NewValue(),
 	ASSIGN_TO_TABLE_KEY = EnumType.NewValue(),
-	FLAT_MAP_FUNCTION = EnumType.NewValue(),
-	FLAT_MAP_METHOD = EnumType.NewValue(),
+	FLAT_MAP_CALL_FUNCTION = EnumType.NewValue(),
+	FLAT_MAP_CALL_METHOD = EnumType.NewValue(),
 })
 Util.PUBLISHER_STEP = STEP
 
@@ -50,3 +50,5 @@ Util.PUBLISHER_STEP = STEP
 ---@field _SetPublisherDisabled fun(self: ReactiveSubject, publisher: ReactivePublisher, disabled: boolean)
 ---@field _GetInitialValue fun(self: ReactiveSubject): any
 ---@field _RequiresOptimized fun(): boolean
+
+---@alias ReactivePublisherFlatMapFunc fun(value: any): ReactivePublisherSchema
