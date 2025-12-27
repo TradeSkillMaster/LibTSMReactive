@@ -369,18 +369,19 @@ function TestState:TestFlatMap()
 		:CreateState()
 		:SetAutoStore(private.cancellables)
 
+	local function GetState2Publisher(str)
+		local publisher = nil
+		for _ in state2:WithAutoStorePaused() do
+			publisher = state2:PublisherForKeys("str", "num")
+				:IgnoreIfNotEquals(str, "str")
+				:Map("num")
+		end
+		return publisher
+	end
+
 	local publishedValues = {}
 	state1:Publisher("str")
-		:FlatMap(function(str)
-			local publisher = nil
-			for _ in state2:WithAutoStorePaused() do
-				publisher = state2:PublisherForKeys("str", "num")
-					:IgnoreIfNotEquals(str, "str")
-					:Map("num")
-			end
-			return publisher
-				:CallFunction(function(value) tinsert(publishedValues, value) end)
-		end)
+		:FlatMapCallFunction(GetState2Publisher, function(value) tinsert(publishedValues, value) end)
 	assertEquals(publishedValues, {1})
 
 	state2.num = 2

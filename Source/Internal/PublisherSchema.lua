@@ -109,14 +109,26 @@ function ReactivePublisherSchema:AssignToTableKey(tbl, key)
 	return self:_Commit()
 end
 
----Maps published values to a new publisher which is owned by the current publisher.
----@param map table|PublisherFlatMapFunc A function which takes a published value and returns a new publisher or an object to call a method on which does the same
----@param methodOrArg? string|any The method name to call if an object is passed for `map` or an extra argument to pass to the function
----@param methodArg? string An extra argument to pass to the method (if applicable)
+---Maps published values to a new publisher which is owned by the current publisher and call a method with values it publishes.
+---@param map ReactivePublisherFlatMapFunc A function which takes a published value and returns a new publisher
+---@param obj table The object to call the method on
+---@param method string The name of the method to call with the published values
+---@param arg any An additional argument to pass to the method
 ---@return ReactivePublisher
-function ReactivePublisherSchema:FlatMap(map, methodOrArg, methodArg)
+function ReactivePublisherSchema:FlatMapCallMethod(map, obj, method, arg)
 	assert(not self._hasShare)
-	local _ = self.__super:FlatMap(map, methodOrArg, methodArg)
+	local _ = self:_AddStepHelper(STEP.FLAT_MAP_CALL_METHOD, map, obj, method, arg)
+	return self:_Commit()
+end
+
+---Maps published values to a new publisher which is owned by the current publisher and call a function with values it publishes.
+---@param map ReactivePublisherFlatMapFunc A function which takes a published value and returns a new publisher
+---@param func fun(value: any) The function to call with the published values
+---@param arg any An additional argument to pass to the function
+---@return ReactivePublisher
+function ReactivePublisherSchema:FlatMapCallFunction(map, func, arg)
+	assert(not self._hasShare)
+	local _ = self:_AddStepHelper(STEP.FLAT_MAP_CALL_FUNCTION, map, func, arg)
 	return self:_Commit()
 end
 

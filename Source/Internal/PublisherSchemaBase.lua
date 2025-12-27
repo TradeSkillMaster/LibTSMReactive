@@ -9,8 +9,7 @@ local ReactivePublisherSchemaBase = LibTSMReactive:DefineInternalClassType("Reac
 local Util = LibTSMReactive:Include("Reactive.Util")
 local STEP = Util.PUBLISHER_STEP
 
----@alias PublisherMapFunc fun(value: any, arg: any): any
----@alias PublisherFlatMapFunc fun(value: any): ReactivePublisher
+---@alias ReactivePublisherMapFunc fun(value: any, arg: any): any
 
 
 
@@ -37,7 +36,7 @@ end
 ---Map published values to another value.
 ---@generic T: ReactivePublisherSchemaBase
 ---@param self T
----@param map PublisherMapFunc|string|number|table Either a map function, table key (string or number) to index, method call (in the form "MyMethod()"), or lookup table
+---@param map ReactivePublisherMapFunc|string|number|table Either a map function, table key (string or number) to index, method call (in the form "MyMethod()"), or lookup table
 ---@param arg any An additional argument to pass to a map function
 ---@return T
 function ReactivePublisherSchemaBase:Map(map, arg)
@@ -62,7 +61,7 @@ end
 ---Map non-nil publishes values to another value.
 ---@generic T: ReactivePublisherSchemaBase
 ---@param self T
----@param map PublisherMapFunc|string Either a map function or method call (in the form "MyMethod()") for non-nil values
+---@param map ReactivePublisherMapFunc|string Either a map function or method call (in the form "MyMethod()") for non-nil values
 ---@param arg any An additinoal argument to pass to the map function or method
 ---@return T
 function ReactivePublisherSchemaBase:MapNonNil(map, arg)
@@ -272,26 +271,29 @@ function ReactivePublisherSchemaBase:AssignToTableKey(tbl, key)
 	return self:_AddStepHelper(STEP.ASSIGN_TO_TABLE_KEY, tbl, key)
 end
 
----Maps published values to a new publisher which is owned by the current publisher.
+---Maps published values to a new publisher which is owned by the current publisher and call a method with values it publishes.
 ---@generic T: ReactivePublisherSchemaBase
 ---@param self T
----@param map table|PublisherFlatMapFunc A function which takes a published value and returns a new publisher or an object to call a method on which does the same
----@param methodOrArg? string|any The method name to call if an object is passed for `map` or an extra argument to pass to the function
----@param methodArg? string An extra argument to pass to the method (if applicable)
+---@param map ReactivePublisherFlatMapFunc A function which takes a published value and returns a new publisher
+---@param obj table The object to call the method on
+---@param method string The name of the method to call with the published values
+---@param arg any An additional argument to pass to the method
 ---@return T
-function ReactivePublisherSchemaBase:FlatMap(map, methodOrArg, methodArg)
+function ReactivePublisherSchemaBase:FlatMapCallMethod(map, obj, method, arg)
 	---@cast self +ReactivePublisherSchemaBase
-	local mapType = type(map)
-	if mapType == "function" then
-		assert(methodArg == nil)
-		self:_AddStepHelper(STEP.FLAT_MAP_FUNCTION, map, methodOrArg)
-	elseif mapType == "table" then
-		assert(type(methodOrArg) == "string")
-		self:_AddStepHelper(STEP.FLAT_MAP_METHOD, map, methodOrArg, methodArg)
-	else
-		error("Invalid map type: "..tostring(map), 2)
-	end
-	return self
+	return self:_AddStepHelper(STEP.FLAT_MAP_CALL_METHOD, map, obj, method, arg)
+end
+
+---Maps published values to a new publisher which is owned by the current publisher and call a function with values it publishes.
+---@generic T: ReactivePublisherSchemaBase
+---@param self T
+---@param map ReactivePublisherFlatMapFunc A function which takes a published value and returns a new publisher
+---@param func fun(value: any) The function to call with the published values
+---@param arg any An additional argument to pass to the function
+---@return T
+function ReactivePublisherSchemaBase:FlatMapCallFunction(map, func, arg)
+	---@cast self +ReactivePublisherSchemaBase
+	return self:_AddStepHelper(STEP.FLAT_MAP_CALL_FUNCTION, map, func, arg)
 end
 
 
