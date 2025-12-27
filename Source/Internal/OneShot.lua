@@ -5,13 +5,13 @@
 -- ------------------------------------------------------------------------------ --
 
 local LibTSMReactive = select(2, ...).LibTSMReactive
-local OneShot = LibTSMReactive:DefineInternalClassType("OneShot")
+local ReactiveOneShot = LibTSMReactive:DefineInternalClassType("ReactiveOneShot")
 local ReactivePublisherSchema = LibTSMReactive:IncludeClassType("ReactivePublisherSchema")
 local private = {
 	cache = {},
 }
 
----@class OneShot: ReactiveSubject
+---@class ReactiveOneShot: ReactiveSubject
 
 
 
@@ -24,9 +24,9 @@ local private = {
 ---@param autoDisable? boolean Whether or not to automatically disable the publisher
 ---@param autoStore? table The table to store the publisher in automatically
 ---@return ReactivePublisherSchema
-function OneShot.__static.GetPublisher(value, autoDisable, autoStore)
+function ReactiveOneShot.__static.GetPublisher(value, autoDisable, autoStore)
 	assert(value ~= nil)
-	local oneShot = private.cache[value] or OneShot(value)
+	local oneShot = private.cache[value] or ReactiveOneShot(value)
 	return oneShot:Publisher(autoDisable, autoStore)
 end
 
@@ -36,7 +36,7 @@ end
 -- Meta Class Methods
 -- ============================================================================
 
-function OneShot.__private:__init(value)
+function ReactiveOneShot.__private:__init(value)
 	self._value = value
 end
 
@@ -50,7 +50,7 @@ end
 ---@param autoDisable? boolean Automatically disable the publisher
 ---@param autoStore? table The table to store new publishers in
 ---@return ReactivePublisherSchema
-function OneShot:Publisher(autoDisable, autoStore)
+function ReactiveOneShot:Publisher(autoDisable, autoStore)
 	local schema = ReactivePublisherSchema.Get(self)
 	if autoDisable then
 		schema:_AutoDisable() ---@diagnostic disable-line invisible
@@ -69,31 +69,31 @@ end
 
 ---@private
 ---@param publisher ReactivePublisher
-function OneShot:_AddPublisher(publisher)
+function ReactiveOneShot:_AddPublisher(publisher)
 	-- Do nothing
 end
 
 ---@private
 ---@param publisher ReactivePublisher
-function OneShot:_RemovePublisher(publisher)
+function ReactiveOneShot:_RemovePublisher(publisher)
 	-- Do nothing
 end
 
 ---@private
 ---@param publisher ReactivePublisher
 ---@param disabled boolean
-function OneShot:_SetPublisherDisabled(publisher, disabled)
+function ReactiveOneShot:_SetPublisherDisabled(publisher, disabled)
 	-- Do nothing
 end
 
 ---@private
 ---@return any
-function OneShot:_GetInitialValue()
+function ReactiveOneShot:_GetInitialValue()
 	return self._value
 end
 
 ---@private
 ---@return boolean
-function OneShot:_RequiresOptimized()
+function ReactiveOneShot:_RequiresOptimized()
 	return false
 end

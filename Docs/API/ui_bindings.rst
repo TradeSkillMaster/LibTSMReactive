@@ -1,8 +1,11 @@
 UIBindings
 ==========
 
-The ``UIBindings`` class is intended to be used with the ``Reactive`` framework and aims to provide
-an easy-to-use mechanism to bind specific values to fields of a ``ReactiveState`` object.
+It's common to have some lower-level service code which is responding to game events to generate
+updates to various state values. This service code acts as a single producer of underlying state
+values and should be completely independent from consumers of them (i.e. different UI windows).
+The ``UIBindings`` class aims to provide a mechanism to allow multiple consuemrs to hook into the
+values being produced in this paradigm.
 
 Example
 -------
