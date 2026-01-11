@@ -1,0 +1,207 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ReactivePublisher &mdash; LibTSMReactive  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../_static/lua.css" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="UIBindings" href="ui_bindings.html" />
+    <link rel="prev" title="ReactivePublisherSchema" href="publisher_schema.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            LibTSMReactive
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../index.html">Home</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">API</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="reactive.html">Reactive</a></li>
+<li class="toctree-l2"><a class="reference internal" href="state_schema.html">ReactiveStateSchema</a></li>
+<li class="toctree-l2"><a class="reference internal" href="state.html">ReactiveState</a></li>
+<li class="toctree-l2"><a class="reference internal" href="stream.html">ReactiveStream</a></li>
+<li class="toctree-l2"><a class="reference internal" href="publisher_schema.html">ReactivePublisherSchema</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">ReactivePublisher</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#stored">Stored</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#disabled">Disabled</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#memory-management">Memory Management</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#api">API</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#lua-ReactivePublisher"><code class="docutils literal notranslate"><span class="pre">ReactivePublisher</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="ui_bindings.html">UIBindings</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ui_manager.html">UIManager</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">LibTSMReactive</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="index.html">API</a></li>
+      <li class="breadcrumb-item active">ReactivePublisher</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="reactivepublisher">
+<h1>ReactivePublisher<a class="headerlink" href="#reactivepublisher" title="Link to this heading"></a></h1>
+<p>The <code class="docutils literal notranslate"><span class="pre">ReactivePublisher</span></code> class is used to represent a committed
+<a class="reference internal" href="publisher_schema.html"><span class="doc">ReactivePublisherSchema</span></a> object. It primarily facilitates lifecycle
+management of the data pipeline defined by the schema.</p>
+<section id="stored">
+<h2>Stored<a class="headerlink" href="#stored" title="Link to this heading"></a></h2>
+<p>When a schema object is committed, a publisher object is created in an initialized state. The data
+pipeline will not be active until the publisher is stored by calling the <code class="docutils literal notranslate"><span class="pre">:StoreIn()</span></code> or
+<code class="docutils literal notranslate"><span class="pre">:Stored()</span></code> method. This is used to assign ownership of the publisher and starts the data
+pipeline. This also triggers the processing of the initial value of the publisher (i.e. the current
+value of the <a class="reference internal" href="state.html"><span class="doc">ReactiveState</span></a> object or the initial value specified when creating
+the <a class="reference internal" href="#"><span class="doc">ReactiveStream</span></a>). The publisher can then be cancelled (automatically
+releasing it back into the internal LibTSMReactive pool) by calling the <code class="docutils literal notranslate"><span class="pre">:Cancel()</span></code> method.</p>
+</section>
+<section id="disabled">
+<h2>Disabled<a class="headerlink" href="#disabled" title="Link to this heading"></a></h2>
+<p>The publisher can be disabled in order to temporarily stop the data pipeline. This is done by
+calling the <code class="docutils literal notranslate"><span class="pre">:Disable()</span></code> method. It can then be enabled again by calling the
+<code class="docutils literal notranslate"><span class="pre">:EnableAndReset()</span></code> method. The behavior is identical to the publisher being cancelled and
+recreated, meaning that the initial value will once again be processed by the data pipeline, and
+any <code class="docutils literal notranslate"><span class="pre">:IgnoreDuplicate()</span></code> calls will act as if there were no previous values published.</p>
+</section>
+<section id="memory-management">
+<h2>Memory Management<a class="headerlink" href="#memory-management" title="Link to this heading"></a></h2>
+<p>The lifecycle of publisher objects is owned by LibTSMReactive, but they may be long-living. They
+are acquired by committing a publisher schema and the application may call the <code class="docutils literal notranslate"><span class="pre">:Cancel()</span></code> method
+in order to release them back to LibTSMReactive for recycling.</p>
+</section>
+<section id="api">
+<h2>API<a class="headerlink" href="#api" title="Link to this heading"></a></h2>
+<dl class="lua class">
+<dt class="sig sig-object lua" id="lua-ReactivePublisher">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">ReactivePublisher</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">Class</span></code><a class="headerlink" href="#lua-ReactivePublisher" title="Link to this definition"></a><br /></dt>
+<dd><dl class="lua method">
+<dt class="sig sig-object lua" id="lua-ReactivePublisher.StoreIn">
+<span class="sig-name descname"><span class="pre">StoreIn</span></span><span class="p"><span class="pre">(</span></span><span class="n"><span class="pre">self</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#lua-ReactivePublisher" title="ReactivePublisher"><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">ReactivePublisher</span></code></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="n"><span class="pre">tbl</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#lua-ReactivePublisher" title="ReactivePublisher"><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">ReactivePublisher</span></code></a><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">)</span></span><a class="headerlink" href="#lua-ReactivePublisher.StoreIn" title="Link to this definition"></a><br /></dt>
+<dd><p>Stores the publisher within the provided table and marks it as stored and active.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>tbl</strong> (<a class="reference internal" href="#lua-ReactivePublisher" title="ReactivePublisher"><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">ReactivePublisher</span></code></a><span class="p">[</span><span class="p">]</span>) – The table to add the publisher to</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="lua method">
+<dt class="sig sig-object lua" id="lua-ReactivePublisher.Stored">
+<span class="sig-name descname"><span class="pre">Stored</span></span><span class="p"><span class="pre">(</span></span><span class="n"><span class="pre">self</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#lua-ReactivePublisher" title="ReactivePublisher"><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">ReactivePublisher</span></code></a><span class="p"><span class="pre">)</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#lua-ReactivePublisher" title="ReactivePublisher"><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">ReactivePublisher</span></code></a><a class="headerlink" href="#lua-ReactivePublisher.Stored" title="Link to this definition"></a><br /></dt>
+<dd><p>Marks the publisher as stored and active.</p>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="lua method">
+<dt class="sig sig-object lua" id="lua-ReactivePublisher.Cancel">
+<span class="sig-name descname"><span class="pre">Cancel</span></span><span class="p"><span class="pre">(</span></span><span class="n"><span class="pre">self</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#lua-ReactivePublisher" title="ReactivePublisher"><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">ReactivePublisher</span></code></a><span class="p"><span class="pre">)</span></span><a class="headerlink" href="#lua-ReactivePublisher.Cancel" title="Link to this definition"></a><br /></dt>
+<dd><p>Cancels and releases the publisher.</p>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="lua method">
+<dt class="sig sig-object lua" id="lua-ReactivePublisher.Disable">
+<span class="sig-name descname"><span class="pre">Disable</span></span><span class="p"><span class="pre">(</span></span><span class="n"><span class="pre">self</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#lua-ReactivePublisher" title="ReactivePublisher"><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">ReactivePublisher</span></code></a><span class="p"><span class="pre">)</span></span><a class="headerlink" href="#lua-ReactivePublisher.Disable" title="Link to this definition"></a><br /></dt>
+<dd><p>Marks the publisher as disabled so it’ll ignore any new values.</p>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="lua method">
+<dt class="sig sig-object lua" id="lua-ReactivePublisher.EnableAndReset">
+<span class="sig-name descname"><span class="pre">EnableAndReset</span></span><span class="p"><span class="pre">(</span></span><span class="n"><span class="pre">self</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#lua-ReactivePublisher" title="ReactivePublisher"><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">ReactivePublisher</span></code></a><span class="p"><span class="pre">)</span></span><a class="headerlink" href="#lua-ReactivePublisher.EnableAndReset" title="Link to this definition"></a><br /></dt>
+<dd><p>Marks the publisher as enabled and reset it to its initial state (sends the initial value again).</p>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="publisher_schema.html" class="btn btn-neutral float-left" title="ReactivePublisherSchema" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="ui_bindings.html" class="btn btn-neutral float-right" title="UIBindings" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, TradeSkillMaster LLC.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

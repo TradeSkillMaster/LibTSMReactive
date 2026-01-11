@@ -1,0 +1,405 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ReactiveStateSchema &mdash; LibTSMReactive  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../_static/lua.css" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="ReactiveState" href="state.html" />
+    <link rel="prev" title="Reactive" href="reactive.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            LibTSMReactive
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../index.html">Home</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">API</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="reactive.html">Reactive</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">ReactiveStateSchema</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#field-data-types">Field Data Types</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#simple-data-types">Simple Data Types</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#enums">Enums</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#optional-table">Optional Table</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#optional-class">Optional Class</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#extending">Extending</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#example">Example</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#memory-management">Memory Management</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#api">API</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#lua-ReactiveStateSchema"><code class="docutils literal notranslate"><span class="pre">ReactiveStateSchema</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="state.html">ReactiveState</a></li>
+<li class="toctree-l2"><a class="reference internal" href="stream.html">ReactiveStream</a></li>
+<li class="toctree-l2"><a class="reference internal" href="publisher_schema.html">ReactivePublisherSchema</a></li>
+<li class="toctree-l2"><a class="reference internal" href="publisher.html">ReactivePublisher</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ui_bindings.html">UIBindings</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ui_manager.html">UIManager</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">LibTSMReactive</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="index.html">API</a></li>
+      <li class="breadcrumb-item active">ReactiveStateSchema</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="reactivestateschema">
+<h1>ReactiveStateSchema<a class="headerlink" href="#reactivestateschema" title="Link to this heading"></a></h1>
+<p>As the name suggests, the <code class="docutils literal notranslate"><span class="pre">ReactiveStateSchema</span></code> class is used to define the schema of a state
+object. The state object is strongly-typed, so the schema is responsible for defining all the
+fields, their types, and their default values. The type of the field is defined by the API method
+which is used to add it. See the <code class="docutils literal notranslate"><span class="pre">:Add*Field()</span></code> method documentation below. Any value assigned to
+a state property will be checked against the schema at assignment time and result in an error if
+it’s of the wrong type. All state changes are tracked based on simple equality checks between
+values.</p>
+<section id="field-data-types">
+<h2>Field Data Types<a class="headerlink" href="#field-data-types" title="Link to this heading"></a></h2>
+<p>State objects support a variety of different types of properties as described below.</p>
+<section id="simple-data-types">
+<h3>Simple Data Types<a class="headerlink" href="#simple-data-types" title="Link to this heading"></a></h3>
+<p>Each of the simple data types (string, number, boolean) can be added either as a required (non-nil)
+field with a default value, or as an optional (nillable) field where the default is nil.</p>
+</section>
+<section id="enums">
+<h3>Enums<a class="headerlink" href="#enums" title="Link to this heading"></a></h3>
+<p><a class="reference external" href="https://github.com/TradeSkillMaster/LibTSMUtil">LibTSMUtil</a> provides an enum type which can also be added as state fields (either optional or
+not). The user-defined enum type is provided when adding an enum field. This allows the field to be
+constrained to a specific enum type, as opposed to allowing values of any enum type.</p>
+</section>
+<section id="optional-table">
+<h3>Optional Table<a class="headerlink" href="#optional-table" title="Link to this heading"></a></h3>
+<p>Optional table fields can be added to store more complex context which isn’t as strictly
+type-checked on the state object. Note that since changes are checked when assigning to the state
+property, changing a field within a table property does not result in that change propagating to
+publishers which are observing the state. Similarly, assigning the same table to a table property
+does not result in a change being observed. In practice, optional table fields are used to store
+context that is associated with the state, but is not necessarily being observed for changes.</p>
+</section>
+<section id="optional-class">
+<h3>Optional Class<a class="headerlink" href="#optional-class" title="Link to this heading"></a></h3>
+<p>Optional class fields behave very similarly to optional table fields. The main reason they are
+provided over just treating class objects as tables (which they are) is for type checking and
+enhanced language server support.</p>
+</section>
+</section>
+<section id="extending">
+<h2>Extending<a class="headerlink" href="#extending" title="Link to this heading"></a></h2>
+<p>There are situations where state schemas are associated with classes, especially for UI components
+where it’s common for there to also be subclasses. In these cases, the state schema provides a
+simple mechanism for the subclasses to extend the schema of their parent class to avoid needing to
+redefine the same fields and potentially introduce bugs if the child state schema doesn’t satisfy
+the requirements of the parent class.</p>
+<p>This is accomplished with the <code class="docutils literal notranslate"><span class="pre">:Extend()</span></code> method which creates a new state schema object that
+inherits all the fields of the original schema. New fields can then be added as normal, but also
+the default values of existing fields can be changed via the <code class="docutils literal notranslate"><span class="pre">:UpdateFieldDefault()</span></code> method.</p>
+</section>
+<section id="example">
+<h2>Example<a class="headerlink" href="#example" title="Link to this heading"></a></h2>
+<p>Below is an exmaple of defining a simple state schema for text and button UI components.</p>
+<div class="highlight-lua notranslate"><div class="highlight"><pre><span></span><span class="kd">local</span><span class="w"> </span><span class="nv">TEXT_STATE_SCHEMA</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">Reactive</span><span class="p">.</span><span class="nf">CreateStateSchema</span><span class="p">(</span><span class="s2">&quot;TEXT_STATE&quot;</span><span class="p">)</span>
+<span class="w">   </span><span class="p">:</span><span class="nf">AddStringField</span><span class="p">(</span><span class="s2">&quot;justifyH&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;LEFT&quot;</span><span class="p">)</span>
+<span class="w">   </span><span class="p">:</span><span class="nf">AddStringField</span><span class="p">(</span><span class="s2">&quot;text&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+<span class="w">   </span><span class="p">:</span><span class="nf">Commit</span><span class="p">()</span>
+
+<span class="kd">local</span><span class="w"> </span><span class="nv">BUTTON_STATE_SCHEMA</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">TEXT_STATE_SCHEMA</span><span class="p">:</span><span class="nf">Extend</span><span class="p">(</span><span class="s2">&quot;BUTTON_STATE&quot;</span><span class="p">)</span>
+<span class="w">   </span><span class="p">:</span><span class="nf">UpdateFieldDefault</span><span class="p">(</span><span class="s2">&quot;justifyH&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;CENTER&quot;</span><span class="p">)</span>
+<span class="w">   </span><span class="p">:</span><span class="nf">AddBooleanField</span><span class="p">(</span><span class="s2">&quot;enabled&quot;</span><span class="p">,</span><span class="w"> </span><span class="kc">true</span><span class="p">)</span>
+<span class="w">   </span><span class="p">:</span><span class="nf">Commit</span><span class="p">()</span>
+</pre></div>
+</div>
+</section>
+<section id="memory-management">
+<h2>Memory Management<a class="headerlink" href="#memory-management" title="Link to this heading"></a></h2>
+<p>The <code class="docutils literal notranslate"><span class="pre">ReactiveStateSchema</span></code> objects are intended to never be GC’d and have a static lifecycle (i.e.
+one that’s equal to the lifecycle of the application), but there is nothing preventing them from
+being GC’d (assuming there are no state objects with a reference to them).</p>
+</section>
+<section id="api">
+<h2>API<a class="headerlink" href="#api" title="Link to this heading"></a></h2>
+<dl class="lua class">
+<dt class="sig sig-object lua" id="lua-ReactiveStateSchema">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">ReactiveStateSchema</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">Class</span></code><a class="headerlink" href="#lua-ReactiveStateSchema" title="Link to this definition"></a><br /></dt>
+<dd><dl class="lua staticmethod">
+<dt class="sig sig-object lua" id="lua-ReactiveStateSchema.Create">
+<em class="property"><span class="k"><span class="pre">staticmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">Create</span></span><span class="p"><span class="pre">(</span></span><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">string</span></code><span class="p"><span class="pre">)</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#lua-ReactiveStateSchema" title="ReactiveStateSchema"><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">ReactiveStateSchema</span></code></a><a class="headerlink" href="#lua-ReactiveStateSchema.Create" title="Link to this definition"></a><br /></dt>
+<dd><p>Creates a new state schema object.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>name</strong> (<code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">string</span></code>) – The name for debugging purposes</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="lua method">
+<dt class="sig sig-object lua" id="lua-ReactiveStateSchema.AddStringField">
+<span class="sig-name descname"><span class="pre">AddStringField</span></span><span class="p"><span class="pre">(</span></span><br /><span class="w">&#160;&#160;&#160; </span><span class="n"><span class="pre">self</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#lua-ReactiveStateSchema" title="ReactiveStateSchema"><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">ReactiveStateSchema</span></code></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><br /><span class="w">&#160;&#160;&#160; </span><span class="n"><span class="pre">key</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">string</span></code><span class="p"><span class="pre">,</span></span><span class="w"> </span><br /><span class="w">&#160;&#160;&#160; </span><span class="n"><span class="pre">default</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">string</span></code><span class="p"><span class="pre">,</span></span><span class="w"> </span><br /><span class="w">&#160;&#160;&#160; </span><span class="n"><span class="pre">validateFunc?</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="k"><span class="pre">fun</span></span><span class="p"><span class="pre">(</span></span><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">string</span></code><span class="p"><span class="pre">)</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">boolean</span></code><br /><span class="p"><span class="pre">)</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#lua-ReactiveStateSchema" title="ReactiveStateSchema"><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">ReactiveStateSchema</span></code></a><a class="headerlink" href="#lua-ReactiveStateSchema.AddStringField" title="Link to this definition"></a><br /></dt>
+<dd><p>Defines a string field as part of the schema.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>key</strong> (<code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">string</span></code>) – The key of the new field</p></li>
+<li><p><strong>default</strong> (<code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">string</span></code>) – The default value of the field</p></li>
+<li><p><strong>validateFunc?</strong> (<span class="k">fun</span><span class="p">(</span><span class="n">value</span><span class="p">:</span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">string</span></code><span class="p">)</span><span class="p">:</span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">boolean</span></code>) – A function used to validate values</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="lua method">
+<dt class="sig sig-object lua" id="lua-ReactiveStateSchema.AddOptionalStringField">
+<span class="sig-name descname"><span class="pre">AddOptionalStringField</span></span><span class="p"><span class="pre">(</span></span><br /><span class="w">&#160;&#160;&#160; </span><span class="n"><span class="pre">self</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#lua-ReactiveStateSchema" title="ReactiveStateSchema"><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">ReactiveStateSchema</span></code></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><br /><span class="w">&#160;&#160;&#160; </span><span class="n"><span class="pre">key</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">string</span></code><span class="p"><span class="pre">,</span></span><span class="w"> </span><br /><span class="w">&#160;&#160;&#160; </span><span class="n"><span class="pre">validateFunc?</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="k"><span class="pre">fun</span></span><span class="p"><span class="pre">(</span></span><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">string</span></code><span class="p"><span class="pre">)</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">boolean</span></code><br /><span class="p"><span class="pre">)</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#lua-ReactiveStateSchema" title="ReactiveStateSchema"><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">ReactiveStateSchema</span></code></a><a class="headerlink" href="#lua-ReactiveStateSchema.AddOptionalStringField" title="Link to this definition"></a><br /></dt>
+<dd><p>Defines a string field as part of the schema which can be nil (and is by default).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>key</strong> (<code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">string</span></code>) – The key of the new field</p></li>
+<li><p><strong>validateFunc?</strong> (<span class="k">fun</span><span class="p">(</span><span class="n">value</span><span class="p">:</span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">string</span></code><span class="p">)</span><span class="p">:</span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">boolean</span></code>) – A function used to validate values</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="lua method">
+<dt class="sig sig-object lua" id="lua-ReactiveStateSchema.AddNumberField">
+<span class="sig-name descname"><span class="pre">AddNumberField</span></span><span class="p"><span class="pre">(</span></span><br /><span class="w">&#160;&#160;&#160; </span><span class="n"><span class="pre">self</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#lua-ReactiveStateSchema" title="ReactiveStateSchema"><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">ReactiveStateSchema</span></code></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><br /><span class="w">&#160;&#160;&#160; </span><span class="n"><span class="pre">key</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">string</span></code><span class="p"><span class="pre">,</span></span><span class="w"> </span><br /><span class="w">&#160;&#160;&#160; </span><span class="n"><span class="pre">default</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">number</span></code><span class="p"><span class="pre">,</span></span><span class="w"> </span><br /><span class="w">&#160;&#160;&#160; </span><span class="n"><span class="pre">validateFunc?</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="k"><span class="pre">fun</span></span><span class="p"><span class="pre">(</span></span><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">number</span></code><span class="p"><span class="pre">)</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">boolean</span></code><br /><span class="p"><span class="pre">)</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#lua-ReactiveStateSchema" title="ReactiveStateSchema"><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">ReactiveStateSchema</span></code></a><a class="headerlink" href="#lua-ReactiveStateSchema.AddNumberField" title="Link to this definition"></a><br /></dt>
+<dd><p>Defines a number field as part of the schema.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>key</strong> (<code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">string</span></code>) – The key of the new field</p></li>
+<li><p><strong>default</strong> (<code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">number</span></code>) – The default value of the field</p></li>
+<li><p><strong>validateFunc?</strong> (<span class="k">fun</span><span class="p">(</span><span class="n">value</span><span class="p">:</span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">number</span></code><span class="p">)</span><span class="p">:</span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">boolean</span></code>) – A function used to validate values</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="lua method">
+<dt class="sig sig-object lua" id="lua-ReactiveStateSchema.AddOptionalNumberField">
+<span class="sig-name descname"><span class="pre">AddOptionalNumberField</span></span><span class="p"><span class="pre">(</span></span><br /><span class="w">&#160;&#160;&#160; </span><span class="n"><span class="pre">self</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#lua-ReactiveStateSchema" title="ReactiveStateSchema"><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">ReactiveStateSchema</span></code></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><br /><span class="w">&#160;&#160;&#160; </span><span class="n"><span class="pre">key</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">string</span></code><span class="p"><span class="pre">,</span></span><span class="w"> </span><br /><span class="w">&#160;&#160;&#160; </span><span class="n"><span class="pre">validateFunc?</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="k"><span class="pre">fun</span></span><span class="p"><span class="pre">(</span></span><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">number</span></code><span class="p"><span class="pre">)</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">boolean</span></code><br /><span class="p"><span class="pre">)</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#lua-ReactiveStateSchema" title="ReactiveStateSchema"><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">ReactiveStateSchema</span></code></a><a class="headerlink" href="#lua-ReactiveStateSchema.AddOptionalNumberField" title="Link to this definition"></a><br /></dt>
+<dd><p>Defines a number field as part of the schema which can be nil (and is by default).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>key</strong> (<code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">string</span></code>) – The key of the new field</p></li>
+<li><p><strong>validateFunc?</strong> (<span class="k">fun</span><span class="p">(</span><span class="n">value</span><span class="p">:</span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">number</span></code><span class="p">)</span><span class="p">:</span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">boolean</span></code>) – A function used to validate values</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="lua method">
+<dt class="sig sig-object lua" id="lua-ReactiveStateSchema.AddBooleanField">
+<span class="sig-name descname"><span class="pre">AddBooleanField</span></span><span class="p"><span class="pre">(</span></span><br /><span class="w">&#160;&#160;&#160; </span><span class="n"><span class="pre">self</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#lua-ReactiveStateSchema" title="ReactiveStateSchema"><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">ReactiveStateSchema</span></code></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><br /><span class="w">&#160;&#160;&#160; </span><span class="n"><span class="pre">key</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">string</span></code><span class="p"><span class="pre">,</span></span><span class="w"> </span><br /><span class="w">&#160;&#160;&#160; </span><span class="n"><span class="pre">default</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">boolean</span></code><br /><span class="p"><span class="pre">)</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#lua-ReactiveStateSchema" title="ReactiveStateSchema"><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">ReactiveStateSchema</span></code></a><a class="headerlink" href="#lua-ReactiveStateSchema.AddBooleanField" title="Link to this definition"></a><br /></dt>
+<dd><p>Defines a boolean field as part of the schema.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>key</strong> (<code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">string</span></code>) – The key of the new field</p></li>
+<li><p><strong>default</strong> (<code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">boolean</span></code>) – The default value of the field</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="lua method">
+<dt class="sig sig-object lua" id="lua-ReactiveStateSchema.AddOptionalBooleanField">
+<span class="sig-name descname"><span class="pre">AddOptionalBooleanField</span></span><span class="p"><span class="pre">(</span></span><span class="n"><span class="pre">self</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#lua-ReactiveStateSchema" title="ReactiveStateSchema"><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">ReactiveStateSchema</span></code></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="n"><span class="pre">key</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">string</span></code><span class="p"><span class="pre">)</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#lua-ReactiveStateSchema" title="ReactiveStateSchema"><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">ReactiveStateSchema</span></code></a><a class="headerlink" href="#lua-ReactiveStateSchema.AddOptionalBooleanField" title="Link to this definition"></a><br /></dt>
+<dd><p>Defines a boolean field as part of the schema which can be nil (and is by default).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>key</strong> (<code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">string</span></code>) – The key of the new field</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="lua method">
+<dt class="sig sig-object lua" id="lua-ReactiveStateSchema.AddOptionalTableField">
+<span class="sig-name descname"><span class="pre">AddOptionalTableField</span></span><span class="p"><span class="pre">(</span></span><br /><span class="w">&#160;&#160;&#160; </span><span class="n"><span class="pre">self</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#lua-ReactiveStateSchema" title="ReactiveStateSchema"><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">ReactiveStateSchema</span></code></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><br /><span class="w">&#160;&#160;&#160; </span><span class="n"><span class="pre">key</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">string</span></code><span class="p"><span class="pre">,</span></span><span class="w"> </span><br /><span class="w">&#160;&#160;&#160; </span><span class="n"><span class="pre">validateFunc?</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="k"><span class="pre">fun</span></span><span class="p"><span class="pre">(</span></span><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">table</span></code><span class="p"><span class="pre">)</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">boolean</span></code><br /><span class="p"><span class="pre">)</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#lua-ReactiveStateSchema" title="ReactiveStateSchema"><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">ReactiveStateSchema</span></code></a><a class="headerlink" href="#lua-ReactiveStateSchema.AddOptionalTableField" title="Link to this definition"></a><br /></dt>
+<dd><p>Defines a table field as part of the schema which can be nil (and is by default).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>key</strong> (<code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">string</span></code>) – The key of the new field</p></li>
+<li><p><strong>validateFunc?</strong> (<span class="k">fun</span><span class="p">(</span><span class="n">value</span><span class="p">:</span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">table</span></code><span class="p">)</span><span class="p">:</span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">boolean</span></code>) – A function used to validate values</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="lua method">
+<dt class="sig sig-object lua" id="lua-ReactiveStateSchema.AddEnumField">
+<span class="sig-name descname"><span class="pre">AddEnumField</span></span><span class="p"><span class="pre">(</span></span><br /><span class="w">&#160;&#160;&#160; </span><span class="n"><span class="pre">self</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#lua-ReactiveStateSchema" title="ReactiveStateSchema"><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">ReactiveStateSchema</span></code></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><br /><span class="w">&#160;&#160;&#160; </span><span class="n"><span class="pre">key</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">string</span></code><span class="p"><span class="pre">,</span></span><span class="w"> </span><br /><span class="w">&#160;&#160;&#160; </span><span class="n"><span class="pre">enumType</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">EnumObject</span></code><span class="p"><span class="pre">,</span></span><span class="w"> </span><br /><span class="w">&#160;&#160;&#160; </span><span class="n"><span class="pre">default</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">EnumValue</span></code><br /><span class="p"><span class="pre">)</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#lua-ReactiveStateSchema" title="ReactiveStateSchema"><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">ReactiveStateSchema</span></code></a><a class="headerlink" href="#lua-ReactiveStateSchema.AddEnumField" title="Link to this definition"></a><br /></dt>
+<dd><p>Defines an enum field field as part of the schema.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>key</strong> (<code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">string</span></code>) – The key of the new field</p></li>
+<li><p><strong>enumType</strong> (<code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">EnumObject</span></code>) – The enum type</p></li>
+<li><p><strong>default</strong> (<code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">EnumValue</span></code>) – The default value of the field</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="lua method">
+<dt class="sig sig-object lua" id="lua-ReactiveStateSchema.AddOptionalEnumField">
+<span class="sig-name descname"><span class="pre">AddOptionalEnumField</span></span><span class="p"><span class="pre">(</span></span><br /><span class="w">&#160;&#160;&#160; </span><span class="n"><span class="pre">self</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#lua-ReactiveStateSchema" title="ReactiveStateSchema"><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">ReactiveStateSchema</span></code></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><br /><span class="w">&#160;&#160;&#160; </span><span class="n"><span class="pre">key</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">string</span></code><span class="p"><span class="pre">,</span></span><span class="w"> </span><br /><span class="w">&#160;&#160;&#160; </span><span class="n"><span class="pre">enumType</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">EnumObject</span></code><br /><span class="p"><span class="pre">)</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#lua-ReactiveStateSchema" title="ReactiveStateSchema"><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">ReactiveStateSchema</span></code></a><a class="headerlink" href="#lua-ReactiveStateSchema.AddOptionalEnumField" title="Link to this definition"></a><br /></dt>
+<dd><p>Defines an enum field field as part of the schema which can be nil (and is by default).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>key</strong> (<code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">string</span></code>) – The key of the new field</p></li>
+<li><p><strong>enumType</strong> (<code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">EnumObject</span></code>) – The enum type</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="lua method">
+<dt class="sig sig-object lua" id="lua-ReactiveStateSchema.AddOptionalClassField">
+<span class="sig-name descname"><span class="pre">AddOptionalClassField</span></span><span class="p"><span class="pre">(</span></span><br /><span class="w">&#160;&#160;&#160; </span><span class="n"><span class="pre">self</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#lua-ReactiveStateSchema" title="ReactiveStateSchema"><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">ReactiveStateSchema</span></code></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><br /><span class="w">&#160;&#160;&#160; </span><span class="n"><span class="pre">key</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">string</span></code><span class="p"><span class="pre">,</span></span><span class="w"> </span><br /><span class="w">&#160;&#160;&#160; </span><span class="n"><span class="pre">class</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">string</span></code><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="p"><span class="pre">&lt;</span></span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">T</span></code><span class="p"><span class="pre">&gt;</span></span><br /><span class="p"><span class="pre">)</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#lua-ReactiveStateSchema" title="ReactiveStateSchema"><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">ReactiveStateSchema</span></code></a><a class="headerlink" href="#lua-ReactiveStateSchema.AddOptionalClassField" title="Link to this definition"></a><br /></dt>
+<dd><p>Defines an optional class field as part of the schema which can be nil (and is by default).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>key</strong> (<code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">string</span></code>) – The key of the new field</p></li>
+<li><p><strong>class</strong> (<code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">string</span></code><span class="w"> </span><span class="p">|</span><span class="w"> </span><span class="p">&lt;</span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">T</span></code><span class="p">&gt;</span>) – The class or name of the class (subclasses are not permitted in the later case)</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="lua method">
+<dt class="sig sig-object lua" id="lua-ReactiveStateSchema.UpdateFieldDefault">
+<span class="sig-name descname"><span class="pre">UpdateFieldDefault</span></span><span class="p"><span class="pre">(</span></span><span class="n"><span class="pre">self</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#lua-ReactiveStateSchema" title="ReactiveStateSchema"><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">ReactiveStateSchema</span></code></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="n"><span class="pre">key</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">string</span></code><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="n"><span class="pre">default</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">any</span></code><span class="p"><span class="pre">)</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#lua-ReactiveStateSchema" title="ReactiveStateSchema"><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">ReactiveStateSchema</span></code></a><a class="headerlink" href="#lua-ReactiveStateSchema.UpdateFieldDefault" title="Link to this definition"></a><br /></dt>
+<dd><p>Updates the default value of an existing field.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>key</strong> (<code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">string</span></code>) – The key of the field</p></li>
+<li><p><strong>default</strong> (<code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">any</span></code>) – The default value of the field</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="lua method">
+<dt class="sig sig-object lua" id="lua-ReactiveStateSchema.Commit">
+<span class="sig-name descname"><span class="pre">Commit</span></span><span class="p"><span class="pre">(</span></span><span class="n"><span class="pre">self</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#lua-ReactiveStateSchema" title="ReactiveStateSchema"><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">ReactiveStateSchema</span></code></a><span class="p"><span class="pre">)</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#lua-ReactiveStateSchema" title="ReactiveStateSchema"><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">ReactiveStateSchema</span></code></a><a class="headerlink" href="#lua-ReactiveStateSchema.Commit" title="Link to this definition"></a><br /></dt>
+<dd><p>Commits the schema and prevents further changes.</p>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="lua method">
+<dt class="sig sig-object lua" id="lua-ReactiveStateSchema.CreateState">
+<span class="sig-name descname"><span class="pre">CreateState</span></span><span class="p"><span class="pre">(</span></span><span class="n"><span class="pre">self</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#lua-ReactiveStateSchema" title="ReactiveStateSchema"><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">ReactiveStateSchema</span></code></a><span class="p"><span class="pre">)</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="state.html#lua-ReactiveState" title="ReactiveState"><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">ReactiveState</span></code></a><a class="headerlink" href="#lua-ReactiveStateSchema.CreateState" title="Link to this definition"></a><br /></dt>
+<dd><p>Creates a state object based on the schema.</p>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="lua method">
+<dt class="sig sig-object lua" id="lua-ReactiveStateSchema.Extend">
+<span class="sig-name descname"><span class="pre">Extend</span></span><span class="p"><span class="pre">(</span></span><span class="n"><span class="pre">self</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#lua-ReactiveStateSchema" title="ReactiveStateSchema"><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">ReactiveStateSchema</span></code></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">string</span></code><span class="p"><span class="pre">)</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#lua-ReactiveStateSchema" title="ReactiveStateSchema"><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">ReactiveStateSchema</span></code></a><a class="headerlink" href="#lua-ReactiveStateSchema.Extend" title="Link to this definition"></a><br /></dt>
+<dd><p>Returns a new state schema which extends the existing one</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>name</strong> (<code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">string</span></code>) – The name of the extended schema</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="reactive.html" class="btn btn-neutral float-left" title="Reactive" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="state.html" class="btn btn-neutral float-right" title="ReactiveState" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, TradeSkillMaster LLC.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

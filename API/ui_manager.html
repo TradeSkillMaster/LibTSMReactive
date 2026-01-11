@@ -1,0 +1,317 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>UIManager &mdash; LibTSMReactive  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../_static/lua.css" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="prev" title="UIBindings" href="ui_bindings.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            LibTSMReactive
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../index.html">Home</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">API</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="reactive.html">Reactive</a></li>
+<li class="toctree-l2"><a class="reference internal" href="state_schema.html">ReactiveStateSchema</a></li>
+<li class="toctree-l2"><a class="reference internal" href="state.html">ReactiveState</a></li>
+<li class="toctree-l2"><a class="reference internal" href="stream.html">ReactiveStream</a></li>
+<li class="toctree-l2"><a class="reference internal" href="publisher_schema.html">ReactivePublisherSchema</a></li>
+<li class="toctree-l2"><a class="reference internal" href="publisher.html">ReactivePublisher</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ui_bindings.html">UIBindings</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">UIManager</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#memory-management">Memory Management</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#api">API</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#lua-UIManager"><code class="docutils literal notranslate"><span class="pre">UIManager</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">LibTSMReactive</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="index.html">API</a></li>
+      <li class="breadcrumb-item active">UIManager</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="uimanager">
+<h1>UIManager<a class="headerlink" href="#uimanager" title="Link to this heading"></a></h1>
+<p>The <code class="docutils literal notranslate"><span class="pre">UIManager</span></code> class provides the framework for driving state updates in response to UI
+interactions or other events. It also manages many of the other components of building a
+state-driven UI, from creating the frame itself, to managing the state and related publishers.</p>
+<section id="memory-management">
+<h2>Memory Management<a class="headerlink" href="#memory-management" title="Link to this heading"></a></h2>
+<p>The <code class="docutils literal notranslate"><span class="pre">UIManager</span></code> objects are intended to never be GC’d and have a static lifecycle (i.e. one
+that’s equal to the lifecycle of the application), but there is nothing preventing them from being
+GC’d.</p>
+</section>
+<section id="api">
+<h2>API<a class="headerlink" href="#api" title="Link to this heading"></a></h2>
+<dl class="lua class">
+<dt class="sig sig-object lua" id="lua-UIManager">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">UIManager</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">Class</span></code><a class="headerlink" href="#lua-UIManager" title="Link to this definition"></a><br /></dt>
+<dd><dl class="lua staticmethod">
+<dt class="sig sig-object lua" id="lua-UIManager.Create">
+<em class="property"><span class="k"><span class="pre">staticmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">Create</span></span><span class="p"><span class="pre">(</span></span><br /><span class="w">&#160;&#160;&#160; </span><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">string</span></code><span class="p"><span class="pre">,</span></span><span class="w"> </span><br /><span class="w">&#160;&#160;&#160; </span><span class="n"><span class="pre">state</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="state.html#lua-ReactiveState" title="ReactiveState"><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">ReactiveState</span></code></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><br /><span class="w">&#160;&#160;&#160; </span><span class="n"><span class="pre">actionHandler</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="k"><span class="pre">fun</span></span><span class="p"><span class="pre">(</span></span><span class="n"><span class="pre">manager</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#lua-UIManager" title="UIManager"><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">UIManager</span></code></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="n"><span class="pre">state</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="state.html#lua-ReactiveState" title="ReactiveState"><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">ReactiveState</span></code></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="n"><span class="pre">action</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">string</span></code><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="n"><span class="pre">...</span></span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">any</span></code><span class="p"><span class="pre">)</span></span><br /><span class="p"><span class="pre">)</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#lua-UIManager" title="UIManager"><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">UIManager</span></code></a><a class="headerlink" href="#lua-UIManager.Create" title="Link to this definition"></a><br /></dt>
+<dd><p>Creates a new UI manager object.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>name</strong> (<code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">string</span></code>) – The name for debugging purposes</p></li>
+<li><p><strong>state</strong> (<a class="reference internal" href="state.html#lua-ReactiveState" title="ReactiveState"><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">ReactiveState</span></code></a>) – The state</p></li>
+<li><p><strong>actionHandler</strong> (<span class="k">fun</span><span class="p">(</span><span class="n">manager</span><span class="p">:</span><span class="w"> </span><a class="reference internal" href="#lua-UIManager" title="UIManager"><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">UIManager</span></code></a><span class="p">,</span><span class="w"> </span><span class="n">state</span><span class="p">:</span><span class="w"> </span><a class="reference internal" href="state.html#lua-ReactiveState" title="ReactiveState"><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">ReactiveState</span></code></a><span class="p">,</span><span class="w"> </span><span class="n">action</span><span class="p">:</span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">string</span></code><span class="p">,</span><span class="w"> </span><span class="n">...</span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">any</span></code><span class="p">)</span>) – The action handler</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="lua method">
+<dt class="sig sig-object lua" id="lua-UIManager.SetStateFromPublisher">
+<span class="sig-name descname"><span class="pre">SetStateFromPublisher</span></span><span class="p"><span class="pre">(</span></span><br /><span class="w">&#160;&#160;&#160; </span><span class="n"><span class="pre">self</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#lua-UIManager" title="UIManager"><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">UIManager</span></code></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><br /><span class="w">&#160;&#160;&#160; </span><span class="n"><span class="pre">key</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">string</span></code><span class="p"><span class="pre">,</span></span><span class="w"> </span><br /><span class="w">&#160;&#160;&#160; </span><span class="n"><span class="pre">publisher</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="publisher_schema.html#lua-ReactivePublisherSchema" title="ReactivePublisherSchema"><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">ReactivePublisherSchema</span></code></a><br /><span class="p"><span class="pre">)</span></span><a class="headerlink" href="#lua-UIManager.SetStateFromPublisher" title="Link to this definition"></a><br /></dt>
+<dd><p>Sets up a publisher to assign any published values to the state.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>key</strong> (<code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">string</span></code>) – The key to set in the state</p></li>
+<li><p><strong>publisher</strong> (<a class="reference internal" href="publisher_schema.html#lua-ReactivePublisherSchema" title="ReactivePublisherSchema"><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">ReactivePublisherSchema</span></code></a>) – The publisher</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="lua method">
+<dt class="sig sig-object lua" id="lua-UIManager.SetStateFromExpression">
+<span class="sig-name descname"><span class="pre">SetStateFromExpression</span></span><span class="p"><span class="pre">(</span></span><span class="n"><span class="pre">self</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#lua-UIManager" title="UIManager"><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">UIManager</span></code></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="n"><span class="pre">key</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">string</span></code><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="n"><span class="pre">expression</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">string</span></code><span class="p"><span class="pre">)</span></span><a class="headerlink" href="#lua-UIManager.SetStateFromExpression" title="Link to this definition"></a><br /></dt>
+<dd><p>Sets a state field based on the result of an expression on the state</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>key</strong> (<code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">string</span></code>) – The key to set in the state</p></li>
+<li><p><strong>expression</strong> (<code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">string</span></code>) – The expression to apply to the state</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="lua method">
+<dt class="sig sig-object lua" id="lua-UIManager.AddCancellable">
+<span class="sig-name descname"><span class="pre">AddCancellable</span></span><span class="p"><span class="pre">(</span></span><span class="n"><span class="pre">self</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#lua-UIManager" title="UIManager"><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">UIManager</span></code></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="n"><span class="pre">publisher</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="publisher.html#lua-ReactivePublisher" title="ReactivePublisher"><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">ReactivePublisher</span></code></a><span class="p"><span class="pre">)</span></span><a class="headerlink" href="#lua-UIManager.AddCancellable" title="Link to this definition"></a><br /></dt>
+<dd><p>Adds a cancellable to be owned by the manager.</p>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="lua method">
+<dt class="sig sig-object lua" id="lua-UIManager.ProcessActionFromPublisher">
+<span class="sig-name descname"><span class="pre">ProcessActionFromPublisher</span></span><span class="p"><span class="pre">(</span></span><br /><span class="w">&#160;&#160;&#160; </span><span class="n"><span class="pre">self</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#lua-UIManager" title="UIManager"><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">UIManager</span></code></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><br /><span class="w">&#160;&#160;&#160; </span><span class="n"><span class="pre">action</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">string</span></code><span class="p"><span class="pre">,</span></span><span class="w"> </span><br /><span class="w">&#160;&#160;&#160; </span><span class="n"><span class="pre">publisher</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="publisher_schema.html#lua-ReactivePublisherSchema" title="ReactivePublisherSchema"><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">ReactivePublisherSchema</span></code></a><br /><span class="p"><span class="pre">)</span></span><a class="headerlink" href="#lua-UIManager.ProcessActionFromPublisher" title="Link to this definition"></a><br /></dt>
+<dd><p>Processes an action whenever a value is published.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>action</strong> (<code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">string</span></code>) – The action to be processed</p></li>
+<li><p><strong>publisher</strong> (<a class="reference internal" href="publisher_schema.html#lua-ReactivePublisherSchema" title="ReactivePublisherSchema"><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">ReactivePublisherSchema</span></code></a>) – The publisher</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="lua method">
+<dt class="sig sig-object lua" id="lua-UIManager.MirrorStateWithTable">
+<span class="sig-name descname"><span class="pre">MirrorStateWithTable</span></span><span class="p"><span class="pre">(</span></span><span class="n"><span class="pre">self</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#lua-UIManager" title="UIManager"><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">UIManager</span></code></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="n"><span class="pre">key</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">string</span></code><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="n"><span class="pre">tbl</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">table</span></code><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="n"><span class="pre">tblKey</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">string</span></code><span class="p"><span class="pre">)</span></span><a class="headerlink" href="#lua-UIManager.MirrorStateWithTable" title="Link to this definition"></a><br /></dt>
+<dd><p>Mirrors a state key with a given table.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>key</strong> (<code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">string</span></code>) – The state key</p></li>
+<li><p><strong>tbl</strong> (<code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">table</span></code>) – The table to assign to</p></li>
+<li><p><strong>tblKey</strong> (<code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">string</span></code>) – The key within the table to assign to</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="lua method">
+<dt class="sig sig-object lua" id="lua-UIManager.CallbackToProcessAction">
+<span class="sig-name descname"><span class="pre">CallbackToProcessAction</span></span><span class="p"><span class="pre">(</span></span><span class="n"><span class="pre">self</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#lua-UIManager" title="UIManager"><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">UIManager</span></code></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="n"><span class="pre">action</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">string</span></code><span class="p"><span class="pre">)</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="k"><span class="pre">fun</span></span><span class="p"><span class="pre">(</span></span><span class="n"><span class="pre">...</span></span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">any</span></code><span class="p"><span class="pre">)</span></span><a class="headerlink" href="#lua-UIManager.CallbackToProcessAction" title="Link to this definition"></a><br /></dt>
+<dd><p>Returns a function which can be used as a callback to process the specified action.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>action</strong> (<code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">string</span></code>) – The action to be processed</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="lua method">
+<dt class="sig sig-object lua" id="lua-UIManager.ProcessAction">
+<span class="sig-name descname"><span class="pre">ProcessAction</span></span><span class="p"><span class="pre">(</span></span><span class="n"><span class="pre">self</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#lua-UIManager" title="UIManager"><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">UIManager</span></code></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="n"><span class="pre">action</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">string</span></code><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="n"><span class="pre">...</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">any</span></code><span class="p"><span class="pre">)</span></span><a class="headerlink" href="#lua-UIManager.ProcessAction" title="Link to this definition"></a><br /></dt>
+<dd><p>Processes an action.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>action</strong> (<code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">string</span></code>) – The action</p></li>
+<li><p><strong>...</strong> (<code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">any</span></code>) – Arguments for the action</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="lua method">
+<dt class="sig sig-object lua" id="lua-UIManager.ManageFuture">
+<span class="sig-name descname"><span class="pre">ManageFuture</span></span><span class="p"><span class="pre">(</span></span><br /><span class="w">&#160;&#160;&#160; </span><span class="n"><span class="pre">self</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#lua-UIManager" title="UIManager"><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">UIManager</span></code></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><br /><span class="w">&#160;&#160;&#160; </span><span class="n"><span class="pre">stateKey</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">string</span></code><span class="p"><span class="pre">,</span></span><span class="w"> </span><br /><span class="w">&#160;&#160;&#160; </span><span class="n"><span class="pre">future</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">Future</span></code><span class="p"><span class="pre">,</span></span><span class="w"> </span><br /><span class="w">&#160;&#160;&#160; </span><span class="n"><span class="pre">action?</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">string</span></code><br /><span class="p"><span class="pre">)</span></span><a class="headerlink" href="#lua-UIManager.ManageFuture" title="Link to this definition"></a><br /></dt>
+<dd><p>Sends an action when a future is done (passing through the value).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>stateKey</strong> (<code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">string</span></code>) – The state key to store the future at</p></li>
+<li><p><strong>future</strong> (<code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">Future</span></code>) – The future</p></li>
+<li><p><strong>action?</strong> (<code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">string</span></code>) – The action to send</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="lua method">
+<dt class="sig sig-object lua" id="lua-UIManager.CancelFuture">
+<span class="sig-name descname"><span class="pre">CancelFuture</span></span><span class="p"><span class="pre">(</span></span><span class="n"><span class="pre">self</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#lua-UIManager" title="UIManager"><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">UIManager</span></code></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="n"><span class="pre">stateKey</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">string</span></code><span class="p"><span class="pre">)</span></span><a class="headerlink" href="#lua-UIManager.CancelFuture" title="Link to this definition"></a><br /></dt>
+<dd><p>Cancels a future previously added via <cite>:ManageFuture()</cite>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>stateKey</strong> (<code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">string</span></code>) – The state key to use to store the future</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="lua method">
+<dt class="sig sig-object lua" id="lua-UIManager.SuppressActionLog">
+<span class="sig-name descname"><span class="pre">SuppressActionLog</span></span><span class="p"><span class="pre">(</span></span><span class="n"><span class="pre">self</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#lua-UIManager" title="UIManager"><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">UIManager</span></code></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="n"><span class="pre">action</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">boolean</span></code><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">string</span></code><span class="p"><span class="pre">)</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#lua-UIManager" title="UIManager"><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">UIManager</span></code></a><a class="headerlink" href="#lua-UIManager.SuppressActionLog" title="Link to this definition"></a><br /></dt>
+<dd><p>Suppresses logs for a given action</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>action</strong> (<code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">boolean</span></code><span class="w"> </span><span class="p">|</span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">string</span></code>) – The action or true to suppress all actions</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="lua method">
+<dt class="sig sig-object lua" id="lua-UIManager.AddFrameBuilder">
+<span class="sig-name descname"><span class="pre">AddFrameBuilder</span></span><span class="p"><span class="pre">(</span></span><br /><span class="w">&#160;&#160;&#160; </span><span class="n"><span class="pre">self</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#lua-UIManager" title="UIManager"><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">UIManager</span></code></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><br /><span class="w">&#160;&#160;&#160; </span><span class="n"><span class="pre">func</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="k"><span class="pre">fun</span></span><span class="p"><span class="pre">(</span></span><span class="n"><span class="pre">state</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="state.html#lua-ReactiveState" title="ReactiveState"><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">ReactiveState</span></code></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="n"><span class="pre">...</span></span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">unknown</span></code><span class="p"><span class="pre">)</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">unknown</span></code><br /><span class="p"><span class="pre">)</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#lua-UIManager" title="UIManager"><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">UIManager</span></code></a><a class="headerlink" href="#lua-UIManager.AddFrameBuilder" title="Link to this definition"></a><br /></dt>
+<dd><p>Adds a UI frame building function.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>func</strong> (<span class="k">fun</span><span class="p">(</span><span class="n">state</span><span class="p">:</span><span class="w"> </span><a class="reference internal" href="state.html#lua-ReactiveState" title="ReactiveState"><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">ReactiveState</span></code></a><span class="p">,</span><span class="w"> </span><span class="n">...</span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">unknown</span></code><span class="p">)</span><span class="p">:</span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">unknown</span></code>) – The function which builds the UI</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="lua method">
+<dt class="sig sig-object lua" id="lua-UIManager.BuildFrame">
+<span class="sig-name descname"><span class="pre">BuildFrame</span></span><span class="p"><span class="pre">(</span></span><span class="n"><span class="pre">self</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#lua-UIManager" title="UIManager"><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">UIManager</span></code></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="n"><span class="pre">...</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">unknown</span></code><span class="p"><span class="pre">)</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">unknown</span></code><a class="headerlink" href="#lua-UIManager.BuildFrame" title="Link to this definition"></a><br /></dt>
+<dd><p>Builds a frame using a previously-registered builder.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>...</strong> (<code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">unknown</span></code>) – Additional arguments to pass to the frame builder</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="lua method">
+<dt class="sig sig-object lua" id="lua-UIManager.StatePublisherForKey">
+<span class="sig-name descname"><span class="pre">StatePublisherForKey</span></span><span class="p"><span class="pre">(</span></span><span class="n"><span class="pre">self</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#lua-UIManager" title="UIManager"><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">UIManager</span></code></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="n"><span class="pre">key</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">string</span></code><span class="p"><span class="pre">)</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="publisher_schema.html#lua-ReactivePublisherSchema" title="ReactivePublisherSchema"><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">ReactivePublisherSchema</span></code></a><a class="headerlink" href="#lua-UIManager.StatePublisherForKey" title="Link to this definition"></a><br /></dt>
+<dd><p>Gets a publisher for a state key.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>key</strong> (<code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">string</span></code>) – The state key to get a publisher for.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="ui_bindings.html" class="btn btn-neutral float-left" title="UIBindings" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, TradeSkillMaster LLC.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

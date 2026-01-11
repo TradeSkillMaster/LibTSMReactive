@@ -1,0 +1,516 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ReactivePublisherSchema &mdash; LibTSMReactive  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../_static/lua.css" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="ReactivePublisher" href="publisher.html" />
+    <link rel="prev" title="ReactiveStream" href="stream.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            LibTSMReactive
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../index.html">Home</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">API</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="reactive.html">Reactive</a></li>
+<li class="toctree-l2"><a class="reference internal" href="state_schema.html">ReactiveStateSchema</a></li>
+<li class="toctree-l2"><a class="reference internal" href="state.html">ReactiveState</a></li>
+<li class="toctree-l2"><a class="reference internal" href="stream.html">ReactiveStream</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">ReactivePublisherSchema</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#stages">Stages</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#share">Share</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#flat-map">Flat Map</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#example">Example</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#memory-management">Memory Management</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#api">API</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#lua-ReactivePublisherSchemaBase"><code class="docutils literal notranslate"><span class="pre">ReactivePublisherSchemaBase</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#lua-ReactivePublisherSchema"><code class="docutils literal notranslate"><span class="pre">ReactivePublisherSchema</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#lua-ReactivePublisherSchemaShared"><code class="docutils literal notranslate"><span class="pre">ReactivePublisherSchemaShared</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="publisher.html">ReactivePublisher</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ui_bindings.html">UIBindings</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ui_manager.html">UIManager</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">LibTSMReactive</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="index.html">API</a></li>
+      <li class="breadcrumb-item active">ReactivePublisherSchema</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="reactivepublisherschema">
+<h1>ReactivePublisherSchema<a class="headerlink" href="#reactivepublisherschema" title="Link to this heading"></a></h1>
+<p>The <code class="docutils literal notranslate"><span class="pre">ReactivePublisherSchema</span></code> class is used to define the data pipeline which handles observed
+values from <a class="reference internal" href="state.html"><span class="doc">ReactiveState</span></a> or <a class="reference internal" href="stream.html"><span class="doc">ReactiveStream</span></a> objects.
+One thing worth noting is that these data pipelines get compiled into lua functions, so their
+execution is highly performant.</p>
+<section id="stages">
+<h2>Stages<a class="headerlink" href="#stages" title="Link to this heading"></a></h2>
+<p>It’s important to understand the two stages of a publisher’s data pipeline.</p>
+<p>The first stage involves applying transformations and filters to the published values. The former
+is accomplished via methods such as <code class="docutils literal notranslate"><span class="pre">:Map()</span></code> and simply transform the published values from one
+value to another, passing the result to the next step of the data pipeline. Filtering is
+accomplished via the <code class="docutils literal notranslate"><span class="pre">:Ignore*()</span></code> methods which either allow the current value through to the
+next step of the data pipeline or prevent any further execution of the data pipeline. There may be
+any number of transformations and filters defined in any order on the publisher schema object.</p>
+<p>The second stage is handling the result of the data pipeline and performing some action with it.
+This is accomplished with the <code class="docutils literal notranslate"><span class="pre">:Call*()</span></code> and <code class="docutils literal notranslate"><span class="pre">:AssignToTableKey()</span></code> methods. There must be
+exactly one of these methods called on the publisher schema and defines the end of the data
+pipeline. These methods commit the schema and return a <a class="reference internal" href="publisher.html"><span class="doc">ReactivePublisher</span></a>
+object.</p>
+</section>
+<section id="share">
+<h2>Share<a class="headerlink" href="#share" title="Link to this heading"></a></h2>
+<p>There are often situations where the first few steps of a data pipeline are common between
+different data pipelines and it’s advantageous to reuse the intermediate value rather than needing
+to duplicate all the logic (and CPU cycles to execute the pipeline). The <code class="docutils literal notranslate"><span class="pre">:Share()</span></code> method is
+used to designate that the value at that point in the data pipeline should be saved and shared
+across multiple subsequent data pipelines. This method returns a <code class="docutils literal notranslate"><span class="pre">ReactivePublisherSchemaShared</span></code>
+object which has most of the same methods, but allows continuing the data pipeline from the steps
+that would otherwise commit it (i.e. <code class="docutils literal notranslate"><span class="pre">:CallMethod()</span></code>) at which point the previuosly-saved
+intermediate value is sent to any following data pipeline steps. The data pipeline is finally
+committed via the <code class="docutils literal notranslate"><span class="pre">:EndShare()</span></code> method. See the example below for what this looks like in
+practice.</p>
+</section>
+<section id="flat-map">
+<h2>Flat Map<a class="headerlink" href="#flat-map" title="Link to this heading"></a></h2>
+<p>In more advanced cases, it’s desirable to be able to transform published values into a new
+publisher. The <code class="docutils literal notranslate"><span class="pre">:FlatMapCall*()</span></code> methods are used for this, where the first argument specifies
+a function which gets published values and returns a new publisher, with the values from that new
+publisher then being handled by the specified function / method.</p>
+</section>
+<section id="example">
+<h2>Example<a class="headerlink" href="#example" title="Link to this heading"></a></h2>
+<p>Here’s an example which creates a publisher from an expression and shares its value to show / hide
+add and subtract buttons within a numeric input when the input is focused or hovered.</p>
+<div class="highlight-lua notranslate"><div class="highlight"><pre><span></span><span class="nv">self</span><span class="p">.</span><span class="py">_state</span><span class="p">:</span><span class="nf">Publisher</span><span class="p">([[</span><span class="nv">subAddEnabled</span><span class="w"> </span><span class="ow">and</span><span class="w"> </span><span class="p">(</span><span class="nv">mouseOver</span><span class="w"> </span><span class="ow">or</span><span class="w"> </span><span class="nv">hasFocus</span><span class="p">)]])</span>
+<span class="w">   </span><span class="p">:</span><span class="nf">Share</span><span class="p">()</span>
+<span class="w">   </span><span class="p">:</span><span class="nf">CallMethod</span><span class="p">(</span><span class="nv">self</span><span class="p">.</span><span class="py">_subIcon</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;SetShown&quot;</span><span class="p">)</span>
+<span class="w">   </span><span class="p">:</span><span class="nf">CallMethod</span><span class="p">(</span><span class="nv">self</span><span class="p">.</span><span class="py">_subBtn</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;SetShown&quot;</span><span class="p">)</span>
+<span class="w">   </span><span class="p">:</span><span class="nf">CallMethod</span><span class="p">(</span><span class="nv">self</span><span class="p">.</span><span class="py">_addIcon</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;SetShown&quot;</span><span class="p">)</span>
+<span class="w">   </span><span class="p">:</span><span class="nf">CallMethod</span><span class="p">(</span><span class="nv">self</span><span class="p">.</span><span class="py">_addBtn</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;SetShown&quot;</span><span class="p">)</span>
+<span class="w">   </span><span class="p">:</span><span class="nf">EndShare</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>Here’s another example for an input field which can optionally have a border color as well as
+showing the border as red when the input’s value is invalid.</p>
+<div class="highlight-lua notranslate"><div class="highlight"><pre><span></span><span class="nv">self</span><span class="p">.</span><span class="py">_state</span><span class="p">:</span><span class="nf">Publisher</span><span class="p">([[</span><span class="nv">borderColor</span><span class="w"> </span><span class="ow">or</span><span class="w"> </span><span class="ow">not</span><span class="w"> </span><span class="nv">isValid</span><span class="p">]])</span>
+<span class="w">   </span><span class="p">:</span><span class="nf">Share</span><span class="p">()</span>
+<span class="w">   </span><span class="p">:</span><span class="nf">CallMethod</span><span class="p">(</span><span class="nv">self</span><span class="p">.</span><span class="py">_borderTexture</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;SetShown&quot;</span><span class="p">)</span>
+<span class="w">   </span><span class="p">:</span><span class="nf">ReplaceBooleanWith</span><span class="p">(</span><span class="nv">BORDER_THICKNESS</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span>
+<span class="w">   </span><span class="p">:</span><span class="nf">CallMethod</span><span class="p">(</span><span class="nv">self</span><span class="p">.</span><span class="py">_backgroundTexture</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;SetInset&quot;</span><span class="p">)</span>
+<span class="w">   </span><span class="p">:</span><span class="nf">EndShare</span><span class="p">()</span>
+<span class="nv">self</span><span class="p">.</span><span class="py">_state</span><span class="p">:</span><span class="nf">CallMethod</span><span class="p">([[</span><span class="nv">isValid</span><span class="w"> </span><span class="ow">and</span><span class="w"> </span><span class="nv">borderColor</span><span class="w"> </span><span class="ow">or</span><span class="w"> </span><span class="s2">&quot;FEEDBACK_RED&quot;</span><span class="p">]])</span>
+<span class="w">   </span><span class="p">:</span><span class="nf">CallMethod</span><span class="p">(</span><span class="nv">self</span><span class="p">.</span><span class="py">_borderTexture</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;SetColor&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="memory-management">
+<h2>Memory Management<a class="headerlink" href="#memory-management" title="Link to this heading"></a></h2>
+<p>The lifecycle of publisher schema objects is owned entirely by LibTSMReactive. They are acquired
+exclusively via methods on <a class="reference internal" href="state.html"><span class="doc">ReactiveState</span></a> and
+<a class="reference internal" href="stream.html"><span class="doc">ReactiveStream</span></a> objects and are recycled internally when they are committed.</p>
+</section>
+<section id="api">
+<h2>API<a class="headerlink" href="#api" title="Link to this heading"></a></h2>
+<dl class="lua class">
+<dt class="sig sig-object lua" id="lua-ReactivePublisherSchemaBase">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">ReactivePublisherSchemaBase</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">Class</span></code><a class="headerlink" href="#lua-ReactivePublisherSchemaBase" title="Link to this definition"></a><br /></dt>
+<dd><dl class="lua method">
+<dt class="sig sig-object lua" id="lua-ReactivePublisherSchemaBase.IsShared">
+<span class="sig-name descname"><span class="pre">IsShared</span></span><span class="p"><span class="pre">(</span></span><span class="n"><span class="pre">self</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#lua-ReactivePublisherSchemaBase" title="ReactivePublisherSchemaBase"><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">ReactivePublisherSchemaBase</span></code></a><span class="p"><span class="pre">)</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">boolean</span></code><a class="headerlink" href="#lua-ReactivePublisherSchemaBase.IsShared" title="Link to this definition"></a><br /></dt>
+<dd><p>Returns whether or not this is a shared publisher.</p>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="lua method">
+<dt class="sig sig-object lua" id="lua-ReactivePublisherSchemaBase.Map">
+<span class="sig-name descname"><span class="pre">Map</span></span><span class="p"><span class="pre">(</span></span><br /><span class="w">&#160;&#160;&#160; </span><span class="n"><span class="pre">self</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="p"><span class="pre">&lt;</span></span><span class="n"><span class="pre">T</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#lua-ReactivePublisherSchemaBase" title="ReactivePublisherSchemaBase"><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">ReactivePublisherSchemaBase</span></code></a><span class="p"><span class="pre">&gt;</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><br /><span class="w">&#160;&#160;&#160; </span><span class="n"><span class="pre">map</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">string</span></code><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">number</span></code><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">table</span></code><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="k"><span class="pre">fun</span></span><span class="p"><span class="pre">(</span></span><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">any</span></code><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="n"><span class="pre">arg</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">any</span></code><span class="p"><span class="pre">)</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">any</span></code><span class="p"><span class="pre">,</span></span><span class="w"> </span><br /><span class="w">&#160;&#160;&#160; </span><span class="n"><span class="pre">arg</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">any</span></code><br /><span class="p"><span class="pre">)</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="p"><span class="pre">&lt;</span></span><span class="n"><span class="pre">T</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#lua-ReactivePublisherSchemaBase" title="ReactivePublisherSchemaBase"><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">ReactivePublisherSchemaBase</span></code></a><span class="p"><span class="pre">&gt;</span></span><a class="headerlink" href="#lua-ReactivePublisherSchemaBase.Map" title="Link to this definition"></a><br /></dt>
+<dd><p>Map published values to another value.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>map</strong> (<code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">string</span></code><span class="w"> </span><span class="p">|</span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">number</span></code><span class="w"> </span><span class="p">|</span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">table</span></code><span class="w"> </span><span class="p">|</span><span class="w"> </span><span class="k">fun</span><span class="p">(</span><span class="n">value</span><span class="p">:</span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">any</span></code><span class="p">,</span><span class="w"> </span><span class="n">arg</span><span class="p">:</span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">any</span></code><span class="p">)</span><span class="p">:</span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">any</span></code>) – Either a map function, table key (string or number) to index, method call (in the form “MyMethod()”), or lookup table</p></li>
+<li><p><strong>arg</strong> (<code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">any</span></code>) – An additional argument to pass to a map function</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="lua method">
+<dt class="sig sig-object lua" id="lua-ReactivePublisherSchemaBase.MapNonNil">
+<span class="sig-name descname"><span class="pre">MapNonNil</span></span><span class="p"><span class="pre">(</span></span><br /><span class="w">&#160;&#160;&#160; </span><span class="n"><span class="pre">self</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="p"><span class="pre">&lt;</span></span><span class="n"><span class="pre">T</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#lua-ReactivePublisherSchemaBase" title="ReactivePublisherSchemaBase"><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">ReactivePublisherSchemaBase</span></code></a><span class="p"><span class="pre">&gt;</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><br /><span class="w">&#160;&#160;&#160; </span><span class="n"><span class="pre">map</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">string</span></code><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="k"><span class="pre">fun</span></span><span class="p"><span class="pre">(</span></span><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">any</span></code><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="n"><span class="pre">arg</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">any</span></code><span class="p"><span class="pre">)</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">any</span></code><span class="p"><span class="pre">,</span></span><span class="w"> </span><br /><span class="w">&#160;&#160;&#160; </span><span class="n"><span class="pre">arg</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">any</span></code><br /><span class="p"><span class="pre">)</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="p"><span class="pre">&lt;</span></span><span class="n"><span class="pre">T</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#lua-ReactivePublisherSchemaBase" title="ReactivePublisherSchemaBase"><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">ReactivePublisherSchemaBase</span></code></a><span class="p"><span class="pre">&gt;</span></span><a class="headerlink" href="#lua-ReactivePublisherSchemaBase.MapNonNil" title="Link to this definition"></a><br /></dt>
+<dd><p>Map non-nil publishes values to another value.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>map</strong> (<code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">string</span></code><span class="w"> </span><span class="p">|</span><span class="w"> </span><span class="k">fun</span><span class="p">(</span><span class="n">value</span><span class="p">:</span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">any</span></code><span class="p">,</span><span class="w"> </span><span class="n">arg</span><span class="p">:</span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">any</span></code><span class="p">)</span><span class="p">:</span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">any</span></code>) – Either a map function or method call (in the form “MyMethod()”) for non-nil values</p></li>
+<li><p><strong>arg</strong> (<code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">any</span></code>) – An additinoal argument to pass to the map function or method</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="lua method">
+<dt class="sig sig-object lua" id="lua-ReactivePublisherSchemaBase.CoalesceNil">
+<span class="sig-name descname"><span class="pre">CoalesceNil</span></span><span class="p"><span class="pre">(</span></span><span class="n"><span class="pre">self</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="p"><span class="pre">&lt;</span></span><span class="n"><span class="pre">T</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#lua-ReactivePublisherSchemaBase" title="ReactivePublisherSchemaBase"><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">ReactivePublisherSchemaBase</span></code></a><span class="p"><span class="pre">&gt;</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">any</span></code><span class="p"><span class="pre">)</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="p"><span class="pre">&lt;</span></span><span class="n"><span class="pre">T</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#lua-ReactivePublisherSchemaBase" title="ReactivePublisherSchemaBase"><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">ReactivePublisherSchemaBase</span></code></a><span class="p"><span class="pre">&gt;</span></span><a class="headerlink" href="#lua-ReactivePublisherSchemaBase.CoalesceNil" title="Link to this definition"></a><br /></dt>
+<dd><p>Coalesces nil published values to a specific value.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>value</strong> (<code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">any</span></code>) – The value to map to</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="lua method">
+<dt class="sig sig-object lua" id="lua-ReactivePublisherSchemaBase.InvertBoolean">
+<span class="sig-name descname"><span class="pre">InvertBoolean</span></span><span class="p"><span class="pre">(</span></span><span class="n"><span class="pre">self</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="p"><span class="pre">&lt;</span></span><span class="n"><span class="pre">T</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#lua-ReactivePublisherSchemaBase" title="ReactivePublisherSchemaBase"><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">ReactivePublisherSchemaBase</span></code></a><span class="p"><span class="pre">&gt;</span></span><span class="p"><span class="pre">)</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="p"><span class="pre">&lt;</span></span><span class="n"><span class="pre">T</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#lua-ReactivePublisherSchemaBase" title="ReactivePublisherSchemaBase"><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">ReactivePublisherSchemaBase</span></code></a><span class="p"><span class="pre">&gt;</span></span><a class="headerlink" href="#lua-ReactivePublisherSchemaBase.InvertBoolean" title="Link to this definition"></a><br /></dt>
+<dd><p>Invert published boolean values.</p>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="lua method">
+<dt class="sig sig-object lua" id="lua-ReactivePublisherSchemaBase.ToBooleanEquals">
+<span class="sig-name descname"><span class="pre">ToBooleanEquals</span></span><span class="p"><span class="pre">(</span></span><span class="n"><span class="pre">self</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="p"><span class="pre">&lt;</span></span><span class="n"><span class="pre">T</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#lua-ReactivePublisherSchemaBase" title="ReactivePublisherSchemaBase"><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">ReactivePublisherSchemaBase</span></code></a><span class="p"><span class="pre">&gt;</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">any</span></code><span class="p"><span class="pre">)</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="p"><span class="pre">&lt;</span></span><span class="n"><span class="pre">T</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#lua-ReactivePublisherSchemaBase" title="ReactivePublisherSchemaBase"><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">ReactivePublisherSchemaBase</span></code></a><span class="p"><span class="pre">&gt;</span></span><a class="headerlink" href="#lua-ReactivePublisherSchemaBase.ToBooleanEquals" title="Link to this definition"></a><br /></dt>
+<dd><p>Map published values to a boolean based on whether or not it equals the specified value.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>value</strong> (<code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">any</span></code>) – The value to compare with</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="lua method">
+<dt class="sig sig-object lua" id="lua-ReactivePublisherSchemaBase.ToBooleanNotEquals">
+<span class="sig-name descname"><span class="pre">ToBooleanNotEquals</span></span><span class="p"><span class="pre">(</span></span><span class="n"><span class="pre">self</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="p"><span class="pre">&lt;</span></span><span class="n"><span class="pre">T</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#lua-ReactivePublisherSchemaBase" title="ReactivePublisherSchemaBase"><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">ReactivePublisherSchemaBase</span></code></a><span class="p"><span class="pre">&gt;</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">any</span></code><span class="p"><span class="pre">)</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="p"><span class="pre">&lt;</span></span><span class="n"><span class="pre">T</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#lua-ReactivePublisherSchemaBase" title="ReactivePublisherSchemaBase"><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">ReactivePublisherSchemaBase</span></code></a><span class="p"><span class="pre">&gt;</span></span><a class="headerlink" href="#lua-ReactivePublisherSchemaBase.ToBooleanNotEquals" title="Link to this definition"></a><br /></dt>
+<dd><p>Map published values to a boolean based on whether or not it equals the specified value.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>value</strong> (<code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">any</span></code>) – The value to compare with</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="lua method">
+<dt class="sig sig-object lua" id="lua-ReactivePublisherSchemaBase.ToBooleanGreaterThanOrEquals">
+<span class="sig-name descname"><span class="pre">ToBooleanGreaterThanOrEquals</span></span><span class="p"><span class="pre">(</span></span><br /><span class="w">&#160;&#160;&#160; </span><span class="n"><span class="pre">self</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="p"><span class="pre">&lt;</span></span><span class="n"><span class="pre">T</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#lua-ReactivePublisherSchemaBase" title="ReactivePublisherSchemaBase"><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">ReactivePublisherSchemaBase</span></code></a><span class="p"><span class="pre">&gt;</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><br /><span class="w">&#160;&#160;&#160; </span><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">string</span></code><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">number</span></code><br /><span class="p"><span class="pre">)</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="p"><span class="pre">&lt;</span></span><span class="n"><span class="pre">T</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#lua-ReactivePublisherSchemaBase" title="ReactivePublisherSchemaBase"><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">ReactivePublisherSchemaBase</span></code></a><span class="p"><span class="pre">&gt;</span></span><a class="headerlink" href="#lua-ReactivePublisherSchemaBase.ToBooleanGreaterThanOrEquals" title="Link to this definition"></a><br /></dt>
+<dd><p>Map published values to a boolean based on whether or not it is greater than or equal to the specified value.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>value</strong> (<code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">string</span></code><span class="w"> </span><span class="p">|</span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">number</span></code>) – The value to compare with</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="lua method">
+<dt class="sig sig-object lua" id="lua-ReactivePublisherSchemaBase.ToBooleanLessThanOrEquals">
+<span class="sig-name descname"><span class="pre">ToBooleanLessThanOrEquals</span></span><span class="p"><span class="pre">(</span></span><br /><span class="w">&#160;&#160;&#160; </span><span class="n"><span class="pre">self</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="p"><span class="pre">&lt;</span></span><span class="n"><span class="pre">T</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#lua-ReactivePublisherSchemaBase" title="ReactivePublisherSchemaBase"><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">ReactivePublisherSchemaBase</span></code></a><span class="p"><span class="pre">&gt;</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><br /><span class="w">&#160;&#160;&#160; </span><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">string</span></code><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">number</span></code><br /><span class="p"><span class="pre">)</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="p"><span class="pre">&lt;</span></span><span class="n"><span class="pre">T</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#lua-ReactivePublisherSchemaBase" title="ReactivePublisherSchemaBase"><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">ReactivePublisherSchemaBase</span></code></a><span class="p"><span class="pre">&gt;</span></span><a class="headerlink" href="#lua-ReactivePublisherSchemaBase.ToBooleanLessThanOrEquals" title="Link to this definition"></a><br /></dt>
+<dd><p>Map published values to a boolean based on whether or not it is less than or equal to the specified value.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>value</strong> (<code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">string</span></code><span class="w"> </span><span class="p">|</span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">number</span></code>) – The value to compare with</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="lua method">
+<dt class="sig sig-object lua" id="lua-ReactivePublisherSchemaBase.ToStringFormat">
+<span class="sig-name descname"><span class="pre">ToStringFormat</span></span><span class="p"><span class="pre">(</span></span><br /><span class="w">&#160;&#160;&#160; </span><span class="n"><span class="pre">self</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="p"><span class="pre">&lt;</span></span><span class="n"><span class="pre">T</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#lua-ReactivePublisherSchemaBase" title="ReactivePublisherSchemaBase"><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">ReactivePublisherSchemaBase</span></code></a><span class="p"><span class="pre">&gt;</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><br /><span class="w">&#160;&#160;&#160; </span><span class="n"><span class="pre">formatStr</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">string</span></code><br /><span class="p"><span class="pre">)</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="p"><span class="pre">&lt;</span></span><span class="n"><span class="pre">T</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#lua-ReactivePublisherSchemaBase" title="ReactivePublisherSchemaBase"><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">ReactivePublisherSchemaBase</span></code></a><span class="p"><span class="pre">&gt;</span></span><a class="headerlink" href="#lua-ReactivePublisherSchemaBase.ToStringFormat" title="Link to this definition"></a><br /></dt>
+<dd><p>Map published values as arguments to a format string.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>formatStr</strong> (<code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">string</span></code>) – The string to format with the published values</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="lua method">
+<dt class="sig sig-object lua" id="lua-ReactivePublisherSchemaBase.ReplaceWith">
+<span class="sig-name descname"><span class="pre">ReplaceWith</span></span><span class="p"><span class="pre">(</span></span><span class="n"><span class="pre">self</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="p"><span class="pre">&lt;</span></span><span class="n"><span class="pre">T</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#lua-ReactivePublisherSchemaBase" title="ReactivePublisherSchemaBase"><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">ReactivePublisherSchemaBase</span></code></a><span class="p"><span class="pre">&gt;</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">any</span></code><span class="p"><span class="pre">)</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="p"><span class="pre">&lt;</span></span><span class="n"><span class="pre">T</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#lua-ReactivePublisherSchemaBase" title="ReactivePublisherSchemaBase"><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">ReactivePublisherSchemaBase</span></code></a><span class="p"><span class="pre">&gt;</span></span><a class="headerlink" href="#lua-ReactivePublisherSchemaBase.ReplaceWith" title="Link to this definition"></a><br /></dt>
+<dd><p>Replaces published values with the specific value.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>value</strong> (<code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">any</span></code>) – The value to replace with</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="lua method">
+<dt class="sig sig-object lua" id="lua-ReactivePublisherSchemaBase.ReplaceBooleanWith">
+<span class="sig-name descname"><span class="pre">ReplaceBooleanWith</span></span><span class="p"><span class="pre">(</span></span><br /><span class="w">&#160;&#160;&#160; </span><span class="n"><span class="pre">self</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="p"><span class="pre">&lt;</span></span><span class="n"><span class="pre">T</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#lua-ReactivePublisherSchemaBase" title="ReactivePublisherSchemaBase"><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">ReactivePublisherSchemaBase</span></code></a><span class="p"><span class="pre">&gt;</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><br /><span class="w">&#160;&#160;&#160; </span><span class="n"><span class="pre">trueValue</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">any</span></code><span class="p"><span class="pre">,</span></span><span class="w"> </span><br /><span class="w">&#160;&#160;&#160; </span><span class="n"><span class="pre">falseValue</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">any</span></code><br /><span class="p"><span class="pre">)</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="p"><span class="pre">&lt;</span></span><span class="n"><span class="pre">T</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#lua-ReactivePublisherSchemaBase" title="ReactivePublisherSchemaBase"><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">ReactivePublisherSchemaBase</span></code></a><span class="p"><span class="pre">&gt;</span></span><a class="headerlink" href="#lua-ReactivePublisherSchemaBase.ReplaceBooleanWith" title="Link to this definition"></a><br /></dt>
+<dd><p>Replaces published boolean values with the specified true / false values.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>trueValue</strong> (<code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">any</span></code>) – The value to replace with to if true</p></li>
+<li><p><strong>falseValue</strong> (<code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">any</span></code>) – The value to replace with to if false</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="lua method">
+<dt class="sig sig-object lua" id="lua-ReactivePublisherSchemaBase.IgnoreIfEquals">
+<span class="sig-name descname"><span class="pre">IgnoreIfEquals</span></span><span class="p"><span class="pre">(</span></span><br /><span class="w">&#160;&#160;&#160; </span><span class="n"><span class="pre">self</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="p"><span class="pre">&lt;</span></span><span class="n"><span class="pre">T</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#lua-ReactivePublisherSchemaBase" title="ReactivePublisherSchemaBase"><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">ReactivePublisherSchemaBase</span></code></a><span class="p"><span class="pre">&gt;</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><br /><span class="w">&#160;&#160;&#160; </span><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">boolean</span></code><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">string</span></code><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">number</span></code><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">nil</span></code><span class="p"><span class="pre">,</span></span><span class="w"> </span><br /><span class="w">&#160;&#160;&#160; </span><span class="n"><span class="pre">key?</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">string</span></code><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">number</span></code><br /><span class="p"><span class="pre">)</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="p"><span class="pre">&lt;</span></span><span class="n"><span class="pre">T</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#lua-ReactivePublisherSchemaBase" title="ReactivePublisherSchemaBase"><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">ReactivePublisherSchemaBase</span></code></a><span class="p"><span class="pre">&gt;</span></span><a class="headerlink" href="#lua-ReactivePublisherSchemaBase.IgnoreIfEquals" title="Link to this definition"></a><br /></dt>
+<dd><p>Ignores published values which equal the specified value.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>value</strong> (<code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">boolean</span></code><span class="w"> </span><span class="p">|</span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">string</span></code><span class="w"> </span><span class="p">|</span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">number</span></code><span class="w"> </span><span class="p">|</span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">nil</span></code>) – The value to compare against</p></li>
+<li><p><strong>key?</strong> (<code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">string</span></code><span class="w"> </span><span class="p">|</span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">number</span></code>) – The key to access for filtering</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="lua method">
+<dt class="sig sig-object lua" id="lua-ReactivePublisherSchemaBase.IgnoreIfNotEquals">
+<span class="sig-name descname"><span class="pre">IgnoreIfNotEquals</span></span><span class="p"><span class="pre">(</span></span><br /><span class="w">&#160;&#160;&#160; </span><span class="n"><span class="pre">self</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="p"><span class="pre">&lt;</span></span><span class="n"><span class="pre">T</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#lua-ReactivePublisherSchemaBase" title="ReactivePublisherSchemaBase"><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">ReactivePublisherSchemaBase</span></code></a><span class="p"><span class="pre">&gt;</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><br /><span class="w">&#160;&#160;&#160; </span><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">boolean</span></code><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">string</span></code><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">number</span></code><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">nil</span></code><span class="p"><span class="pre">,</span></span><span class="w"> </span><br /><span class="w">&#160;&#160;&#160; </span><span class="n"><span class="pre">key?</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">string</span></code><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">number</span></code><br /><span class="p"><span class="pre">)</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="p"><span class="pre">&lt;</span></span><span class="n"><span class="pre">T</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#lua-ReactivePublisherSchemaBase" title="ReactivePublisherSchemaBase"><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">ReactivePublisherSchemaBase</span></code></a><span class="p"><span class="pre">&gt;</span></span><a class="headerlink" href="#lua-ReactivePublisherSchemaBase.IgnoreIfNotEquals" title="Link to this definition"></a><br /></dt>
+<dd><p>Ignores published values which don’t equal the specified value.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>value</strong> (<code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">boolean</span></code><span class="w"> </span><span class="p">|</span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">string</span></code><span class="w"> </span><span class="p">|</span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">number</span></code><span class="w"> </span><span class="p">|</span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">nil</span></code>) – The value to compare against</p></li>
+<li><p><strong>key?</strong> (<code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">string</span></code><span class="w"> </span><span class="p">|</span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">number</span></code>) – The key to access for filtering</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="lua method">
+<dt class="sig sig-object lua" id="lua-ReactivePublisherSchemaBase.IgnoreNil">
+<span class="sig-name descname"><span class="pre">IgnoreNil</span></span><span class="p"><span class="pre">(</span></span><span class="n"><span class="pre">self</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="p"><span class="pre">&lt;</span></span><span class="n"><span class="pre">T</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#lua-ReactivePublisherSchemaBase" title="ReactivePublisherSchemaBase"><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">ReactivePublisherSchemaBase</span></code></a><span class="p"><span class="pre">&gt;</span></span><span class="p"><span class="pre">)</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="p"><span class="pre">&lt;</span></span><span class="n"><span class="pre">T</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#lua-ReactivePublisherSchemaBase" title="ReactivePublisherSchemaBase"><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">ReactivePublisherSchemaBase</span></code></a><span class="p"><span class="pre">&gt;</span></span><a class="headerlink" href="#lua-ReactivePublisherSchemaBase.IgnoreNil" title="Link to this definition"></a><br /></dt>
+<dd><p>Ignores published values if it’s nil.</p>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="lua method">
+<dt class="sig sig-object lua" id="lua-ReactivePublisherSchemaBase.IgnoreDuplicates">
+<span class="sig-name descname"><span class="pre">IgnoreDuplicates</span></span><span class="p"><span class="pre">(</span></span><br /><span class="w">&#160;&#160;&#160; </span><span class="n"><span class="pre">self</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="p"><span class="pre">&lt;</span></span><span class="n"><span class="pre">T</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#lua-ReactivePublisherSchemaBase" title="ReactivePublisherSchemaBase"><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">ReactivePublisherSchemaBase</span></code></a><span class="p"><span class="pre">&gt;</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><br /><span class="w">&#160;&#160;&#160; </span><span class="n"><span class="pre">hashFunc?</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">string</span></code><br /><span class="p"><span class="pre">)</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="p"><span class="pre">&lt;</span></span><span class="n"><span class="pre">T</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#lua-ReactivePublisherSchemaBase" title="ReactivePublisherSchemaBase"><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">ReactivePublisherSchemaBase</span></code></a><span class="p"><span class="pre">&gt;</span></span><a class="headerlink" href="#lua-ReactivePublisherSchemaBase.IgnoreDuplicates" title="Link to this definition"></a><br /></dt>
+<dd><p>Ignores duplicate published values.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>hashFunc?</strong> (<code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">string</span></code>) – A method call (in the form “MyMethod()”) to calculate the hash to check for equality</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="lua method">
+<dt class="sig sig-object lua" id="lua-ReactivePublisherSchemaBase.IgnoreDuplicatesWithKeys">
+<span class="sig-name descname"><span class="pre">IgnoreDuplicatesWithKeys</span></span><span class="p"><span class="pre">(</span></span><span class="n"><span class="pre">self</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="p"><span class="pre">&lt;</span></span><span class="n"><span class="pre">T</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#lua-ReactivePublisherSchemaBase" title="ReactivePublisherSchemaBase"><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">ReactivePublisherSchemaBase</span></code></a><span class="p"><span class="pre">&gt;</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="n"><span class="pre">...</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">string</span></code><span class="p"><span class="pre">)</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="p"><span class="pre">&lt;</span></span><span class="n"><span class="pre">T</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#lua-ReactivePublisherSchemaBase" title="ReactivePublisherSchemaBase"><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">ReactivePublisherSchemaBase</span></code></a><span class="p"><span class="pre">&gt;</span></span><a class="headerlink" href="#lua-ReactivePublisherSchemaBase.IgnoreDuplicatesWithKeys" title="Link to this definition"></a><br /></dt>
+<dd><p>Ignores duplicate published values by checking the specified keys.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>...</strong> (<code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">string</span></code>) – Keys to compare to detect duplicate published values</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="lua method">
+<dt class="sig sig-object lua" id="lua-ReactivePublisherSchemaBase.Print">
+<span class="sig-name descname"><span class="pre">Print</span></span><span class="p"><span class="pre">(</span></span><span class="n"><span class="pre">self</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="p"><span class="pre">&lt;</span></span><span class="n"><span class="pre">T</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#lua-ReactivePublisherSchemaBase" title="ReactivePublisherSchemaBase"><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">ReactivePublisherSchemaBase</span></code></a><span class="p"><span class="pre">&gt;</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="n"><span class="pre">tag?</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">string</span></code><span class="p"><span class="pre">)</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="p"><span class="pre">&lt;</span></span><span class="n"><span class="pre">T</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#lua-ReactivePublisherSchemaBase" title="ReactivePublisherSchemaBase"><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">ReactivePublisherSchemaBase</span></code></a><span class="p"><span class="pre">&gt;</span></span><a class="headerlink" href="#lua-ReactivePublisherSchemaBase.Print" title="Link to this definition"></a><br /></dt>
+<dd><p>Prints published values and passes them through for debugging purposes.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>tag?</strong> (<code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">string</span></code>) – An optional tag to add to the prints</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="lua method">
+<dt class="sig sig-object lua" id="lua-ReactivePublisherSchemaBase.CallMethod">
+<span class="sig-name descname"><span class="pre">CallMethod</span></span><span class="p"><span class="pre">(</span></span><br /><span class="w">&#160;&#160;&#160; </span><span class="n"><span class="pre">self</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="p"><span class="pre">&lt;</span></span><span class="n"><span class="pre">T</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#lua-ReactivePublisherSchemaBase" title="ReactivePublisherSchemaBase"><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">ReactivePublisherSchemaBase</span></code></a><span class="p"><span class="pre">&gt;</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><br /><span class="w">&#160;&#160;&#160; </span><span class="n"><span class="pre">obj</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">table</span></code><span class="p"><span class="pre">,</span></span><span class="w"> </span><br /><span class="w">&#160;&#160;&#160; </span><span class="n"><span class="pre">method</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">string</span></code><span class="p"><span class="pre">,</span></span><span class="w"> </span><br /><span class="w">&#160;&#160;&#160; </span><span class="n"><span class="pre">arg</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">any</span></code><br /><span class="p"><span class="pre">)</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="p"><span class="pre">&lt;</span></span><span class="n"><span class="pre">T</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#lua-ReactivePublisherSchemaBase" title="ReactivePublisherSchemaBase"><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">ReactivePublisherSchemaBase</span></code></a><span class="p"><span class="pre">&gt;</span></span><a class="headerlink" href="#lua-ReactivePublisherSchemaBase.CallMethod" title="Link to this definition"></a><br /></dt>
+<dd><p>Calls a method with the published values.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>obj</strong> (<code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">table</span></code>) – The object to call the method on</p></li>
+<li><p><strong>method</strong> (<code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">string</span></code>) – The name of the method to call with the published values</p></li>
+<li><p><strong>arg</strong> (<code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">any</span></code>) – An additional argument to pass to the method</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="lua method">
+<dt class="sig sig-object lua" id="lua-ReactivePublisherSchemaBase.CallFunction">
+<span class="sig-name descname"><span class="pre">CallFunction</span></span><span class="p"><span class="pre">(</span></span><br /><span class="w">&#160;&#160;&#160; </span><span class="n"><span class="pre">self</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="p"><span class="pre">&lt;</span></span><span class="n"><span class="pre">T</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#lua-ReactivePublisherSchemaBase" title="ReactivePublisherSchemaBase"><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">ReactivePublisherSchemaBase</span></code></a><span class="p"><span class="pre">&gt;</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><br /><span class="w">&#160;&#160;&#160; </span><span class="n"><span class="pre">func</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="k"><span class="pre">fun</span></span><span class="p"><span class="pre">(</span></span><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">any</span></code><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="n"><span class="pre">arg</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">any</span></code><span class="p"><span class="pre">)</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><br /><span class="w">&#160;&#160;&#160; </span><span class="n"><span class="pre">arg</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">any</span></code><br /><span class="p"><span class="pre">)</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="p"><span class="pre">&lt;</span></span><span class="n"><span class="pre">T</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#lua-ReactivePublisherSchemaBase" title="ReactivePublisherSchemaBase"><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">ReactivePublisherSchemaBase</span></code></a><span class="p"><span class="pre">&gt;</span></span><a class="headerlink" href="#lua-ReactivePublisherSchemaBase.CallFunction" title="Link to this definition"></a><br /></dt>
+<dd><p>Calls a function with the published values.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>func</strong> (<span class="k">fun</span><span class="p">(</span><span class="n">value</span><span class="p">:</span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">any</span></code><span class="p">,</span><span class="w"> </span><span class="n">arg</span><span class="p">:</span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">any</span></code><span class="p">)</span>) – The function to call with the published values</p></li>
+<li><p><strong>arg</strong> (<code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">any</span></code>) – An additional argument to pass to the function</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="lua method">
+<dt class="sig sig-object lua" id="lua-ReactivePublisherSchemaBase.AssignToTableKey">
+<span class="sig-name descname"><span class="pre">AssignToTableKey</span></span><span class="p"><span class="pre">(</span></span><br /><span class="w">&#160;&#160;&#160; </span><span class="n"><span class="pre">self</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="p"><span class="pre">&lt;</span></span><span class="n"><span class="pre">T</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#lua-ReactivePublisherSchemaBase" title="ReactivePublisherSchemaBase"><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">ReactivePublisherSchemaBase</span></code></a><span class="p"><span class="pre">&gt;</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><br /><span class="w">&#160;&#160;&#160; </span><span class="n"><span class="pre">tbl</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">table</span></code><span class="p"><span class="pre">,</span></span><span class="w"> </span><br /><span class="w">&#160;&#160;&#160; </span><span class="n"><span class="pre">key</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">string</span></code><br /><span class="p"><span class="pre">)</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="p"><span class="pre">&lt;</span></span><span class="n"><span class="pre">T</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#lua-ReactivePublisherSchemaBase" title="ReactivePublisherSchemaBase"><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">ReactivePublisherSchemaBase</span></code></a><span class="p"><span class="pre">&gt;</span></span><a class="headerlink" href="#lua-ReactivePublisherSchemaBase.AssignToTableKey" title="Link to this definition"></a><br /></dt>
+<dd><p>Assigns published values to the specified key in the table.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>tbl</strong> (<code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">table</span></code>) – The table to assign the published values into</p></li>
+<li><p><strong>key</strong> (<code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">string</span></code>) – The key to assign the published values at</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="lua method">
+<dt class="sig sig-object lua" id="lua-ReactivePublisherSchemaBase.FlatMapCallMethod">
+<span class="sig-name descname"><span class="pre">FlatMapCallMethod</span></span><span class="p"><span class="pre">(</span></span><br /><span class="w">&#160;&#160;&#160; </span><span class="n"><span class="pre">self</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="p"><span class="pre">&lt;</span></span><span class="n"><span class="pre">T</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#lua-ReactivePublisherSchemaBase" title="ReactivePublisherSchemaBase"><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">ReactivePublisherSchemaBase</span></code></a><span class="p"><span class="pre">&gt;</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><br /><span class="w">&#160;&#160;&#160; </span><span class="n"><span class="pre">map</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="k"><span class="pre">fun</span></span><span class="p"><span class="pre">(</span></span><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">any</span></code><span class="p"><span class="pre">)</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#lua-ReactivePublisherSchema" title="ReactivePublisherSchema"><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">ReactivePublisherSchema</span></code></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><br /><span class="w">&#160;&#160;&#160; </span><span class="n"><span class="pre">obj</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">table</span></code><span class="p"><span class="pre">,</span></span><span class="w"> </span><br /><span class="w">&#160;&#160;&#160; </span><span class="n"><span class="pre">method</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">string</span></code><span class="p"><span class="pre">,</span></span><span class="w"> </span><br /><span class="w">&#160;&#160;&#160; </span><span class="n"><span class="pre">arg</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">any</span></code><br /><span class="p"><span class="pre">)</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="p"><span class="pre">&lt;</span></span><span class="n"><span class="pre">T</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#lua-ReactivePublisherSchemaBase" title="ReactivePublisherSchemaBase"><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">ReactivePublisherSchemaBase</span></code></a><span class="p"><span class="pre">&gt;</span></span><a class="headerlink" href="#lua-ReactivePublisherSchemaBase.FlatMapCallMethod" title="Link to this definition"></a><br /></dt>
+<dd><p>Maps published values to a new publisher which is owned by the current publisher and call a method with values it publishes.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>map</strong> (<span class="k">fun</span><span class="p">(</span><span class="n">value</span><span class="p">:</span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">any</span></code><span class="p">)</span><span class="p">:</span><span class="w"> </span><a class="reference internal" href="#lua-ReactivePublisherSchema" title="ReactivePublisherSchema"><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">ReactivePublisherSchema</span></code></a>) – A function which takes a published value and returns a new publisher</p></li>
+<li><p><strong>obj</strong> (<code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">table</span></code>) – The object to call the method on</p></li>
+<li><p><strong>method</strong> (<code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">string</span></code>) – The name of the method to call with the published values</p></li>
+<li><p><strong>arg</strong> (<code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">any</span></code>) – An additional argument to pass to the method</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="lua method">
+<dt class="sig sig-object lua" id="lua-ReactivePublisherSchemaBase.FlatMapCallFunction">
+<span class="sig-name descname"><span class="pre">FlatMapCallFunction</span></span><span class="p"><span class="pre">(</span></span><br /><span class="w">&#160;&#160;&#160; </span><span class="n"><span class="pre">self</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="p"><span class="pre">&lt;</span></span><span class="n"><span class="pre">T</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#lua-ReactivePublisherSchemaBase" title="ReactivePublisherSchemaBase"><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">ReactivePublisherSchemaBase</span></code></a><span class="p"><span class="pre">&gt;</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><br /><span class="w">&#160;&#160;&#160; </span><span class="n"><span class="pre">map</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="k"><span class="pre">fun</span></span><span class="p"><span class="pre">(</span></span><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">any</span></code><span class="p"><span class="pre">)</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#lua-ReactivePublisherSchema" title="ReactivePublisherSchema"><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">ReactivePublisherSchema</span></code></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><br /><span class="w">&#160;&#160;&#160; </span><span class="n"><span class="pre">func</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="k"><span class="pre">fun</span></span><span class="p"><span class="pre">(</span></span><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">any</span></code><span class="p"><span class="pre">)</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><br /><span class="w">&#160;&#160;&#160; </span><span class="n"><span class="pre">arg</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">any</span></code><br /><span class="p"><span class="pre">)</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="p"><span class="pre">&lt;</span></span><span class="n"><span class="pre">T</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#lua-ReactivePublisherSchemaBase" title="ReactivePublisherSchemaBase"><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">ReactivePublisherSchemaBase</span></code></a><span class="p"><span class="pre">&gt;</span></span><a class="headerlink" href="#lua-ReactivePublisherSchemaBase.FlatMapCallFunction" title="Link to this definition"></a><br /></dt>
+<dd><p>Maps published values to a new publisher which is owned by the current publisher and call a function with values it publishes.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>map</strong> (<span class="k">fun</span><span class="p">(</span><span class="n">value</span><span class="p">:</span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">any</span></code><span class="p">)</span><span class="p">:</span><span class="w"> </span><a class="reference internal" href="#lua-ReactivePublisherSchema" title="ReactivePublisherSchema"><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">ReactivePublisherSchema</span></code></a>) – A function which takes a published value and returns a new publisher</p></li>
+<li><p><strong>func</strong> (<span class="k">fun</span><span class="p">(</span><span class="n">value</span><span class="p">:</span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">any</span></code><span class="p">)</span>) – The function to call with the published values</p></li>
+<li><p><strong>arg</strong> (<code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">any</span></code>) – An additional argument to pass to the function</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="lua class">
+<dt class="sig sig-object lua" id="lua-ReactivePublisherSchema">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">ReactivePublisherSchema</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#lua-ReactivePublisherSchemaBase" title="ReactivePublisherSchemaBase"><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">ReactivePublisherSchemaBase</span></code></a><a class="headerlink" href="#lua-ReactivePublisherSchema" title="Link to this definition"></a><br /></dt>
+<dd><dl class="lua method">
+<dt class="sig sig-object lua" id="lua-ReactivePublisherSchema.Share">
+<span class="sig-name descname"><span class="pre">Share</span></span><span class="p"><span class="pre">(</span></span><span class="n"><span class="pre">self</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#lua-ReactivePublisherSchema" title="ReactivePublisherSchema"><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">ReactivePublisherSchema</span></code></a><span class="p"><span class="pre">)</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#lua-ReactivePublisherSchemaShared" title="ReactivePublisherSchemaShared"><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">ReactivePublisherSchemaShared</span></code></a><a class="headerlink" href="#lua-ReactivePublisherSchema.Share" title="Link to this definition"></a><br /></dt>
+<dd><p>Shares the result of the publisher at the current point in the chain.</p>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="lua class">
+<dt class="sig sig-object lua" id="lua-ReactivePublisherSchemaShared">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">ReactivePublisherSchemaShared</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#lua-ReactivePublisherSchemaBase" title="ReactivePublisherSchemaBase"><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">ReactivePublisherSchemaBase</span></code></a><a class="headerlink" href="#lua-ReactivePublisherSchemaShared" title="Link to this definition"></a><br /></dt>
+<dd><dl class="lua method">
+<dt class="sig sig-object lua" id="lua-ReactivePublisherSchemaShared.EndShare">
+<span class="sig-name descname"><span class="pre">EndShare</span></span><span class="p"><span class="pre">(</span></span><span class="n"><span class="pre">self</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#lua-ReactivePublisherSchemaShared" title="ReactivePublisherSchemaShared"><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">ReactivePublisherSchemaShared</span></code></a><span class="p"><span class="pre">)</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="publisher.html#lua-ReactivePublisher" title="ReactivePublisher"><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">ReactivePublisher</span></code></a><a class="headerlink" href="#lua-ReactivePublisherSchemaShared.EndShare" title="Link to this definition"></a><br /></dt>
+<dd><p>Ends the share.</p>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="stream.html" class="btn btn-neutral float-left" title="ReactiveStream" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="publisher.html" class="btn btn-neutral float-right" title="ReactivePublisher" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, TradeSkillMaster LLC.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

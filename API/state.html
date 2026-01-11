@@ -1,0 +1,347 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ReactiveState &mdash; LibTSMReactive  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../_static/lua.css" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="ReactiveStream" href="stream.html" />
+    <link rel="prev" title="ReactiveStateSchema" href="state_schema.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            LibTSMReactive
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../index.html">Home</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">API</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="reactive.html">Reactive</a></li>
+<li class="toctree-l2"><a class="reference internal" href="state_schema.html">ReactiveStateSchema</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">ReactiveState</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#creating-publishers">Creating Publishers</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#single-key">Single Key</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#expression">Expression</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#function">Function</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#multiple-keys">Multiple Keys</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#example">Example</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#memory-management">Memory Management</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#api">API</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#lua-ReactiveState"><code class="docutils literal notranslate"><span class="pre">ReactiveState</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="stream.html">ReactiveStream</a></li>
+<li class="toctree-l2"><a class="reference internal" href="publisher_schema.html">ReactivePublisherSchema</a></li>
+<li class="toctree-l2"><a class="reference internal" href="publisher.html">ReactivePublisher</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ui_bindings.html">UIBindings</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ui_manager.html">UIManager</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">LibTSMReactive</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="index.html">API</a></li>
+      <li class="breadcrumb-item active">ReactiveState</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="reactivestate">
+<h1>ReactiveState<a class="headerlink" href="#reactivestate" title="Link to this heading"></a></h1>
+<p>The <code class="docutils literal notranslate"><span class="pre">ReactiveState</span></code> object is at the core of the Reactive framework. It is a strongly typed
+object which allows for observing changes via publishers. It is created from
+<a class="reference internal" href="state_schema.html"><span class="doc">ReactiveStateSchema</span></a> objects. In addition to providing the properties
+defined by the schema, it also provides various methods for creating publishers which handle
+changes to said properties.</p>
+<section id="creating-publishers">
+<h2>Creating Publishers<a class="headerlink" href="#creating-publishers" title="Link to this heading"></a></h2>
+<p><a class="reference internal" href="publisher_schema.html"><span class="doc">ReactivePublisherSchema</span></a> objects are created from state objects in
+order to define data pipelines which get triggered when the value of one or more of the state
+properties changes. There are a few different ways provided to create these publishers from a state
+object in order to optimize for common usage patterns in an optimized way.</p>
+<section id="single-key">
+<h3>Single Key<a class="headerlink" href="#single-key" title="Link to this heading"></a></h3>
+<p>The simplest way is to simply observe a single state field via the <code class="docutils literal notranslate"><span class="pre">:Publisher()</span></code> method. In this
+case, just the value of the specified field will be provided to the publisher’s data pipeline.</p>
+</section>
+<section id="expression">
+<h3>Expression<a class="headerlink" href="#expression" title="Link to this heading"></a></h3>
+<p>In practice, it’s common to want to observe either multiple keys or even to observe the result of
+a simple expression applied to the state. For example, enabling the “Submit” button on a form only
+if both its fields have been filled. The <code class="docutils literal notranslate"><span class="pre">:Publisher()</span></code> method allows passing in a simple lua
+expression which can access the properties of the state object. The result of this expression is
+then passed to the publisher’s data pipeline (when it changes). Under the hood, this expression
+then gets included in the publisher’s compiled data pipeline, making this an extremely optimized
+way of defining complex state observation logic. See the example code below for some examples of
+how this can be used, but there are a few constraints on the expression:</p>
+<ol class="arabic simple">
+<li><p>All state properties are exposed as globals. If you have a state with <code class="docutils literal notranslate"><span class="pre">num</span></code> and <code class="docutils literal notranslate"><span class="pre">str</span></code>
+fields, they are accessed within the expression by their names directly.</p></li>
+<li><p>No global variables, functions, or standard library methods are allowed to be used within the
+expression, including string/table methods (i.e. <code class="docutils literal notranslate"><span class="pre">str:sub(1,</span> <span class="pre">1)</span></code> is not allowed). The only
+exception is that the <code class="docutils literal notranslate"><span class="pre">min()</span></code> and <code class="docutils literal notranslate"><span class="pre">max()</span></code> functions are made available.</p></li>
+<li><p>Tables cannot be created within the expression (no <code class="docutils literal notranslate"><span class="pre">{</span></code> or <code class="docutils literal notranslate"><span class="pre">}</span></code> tokens allowed). However,
+string literals are allowed (with double quotes, i.e. <code class="docutils literal notranslate"><span class="pre">&quot;Hello</span> <span class="pre">World&quot;</span></code>).</p></li>
+<li><p>An <code class="docutils literal notranslate"><span class="pre">EnumEquals()</span></code> method is provided to allow for checking for specific enum field values.</p></li>
+</ol>
+</section>
+<section id="function">
+<h3>Function<a class="headerlink" href="#function" title="Link to this heading"></a></h3>
+<p>For cases where more complex logic is required than what is possible within an expression, a
+function can be provided which operates on a subset of the state properties and produces a single
+value that is then passed to the publisher’s data pipeline (when it changes). This can be used to
+get around some of the constraints imposed when using expressions, or just to call additional
+functions as required to determine the result. It’s important to note that this function <strong>must</strong>
+only depend on the state values being passed in to it, can not depend on any extrenal state or
+have any side-effects, and must be deterministic (meaning the output must always be the same for a
+given set of inputs).</p>
+</section>
+<section id="multiple-keys">
+<h3>Multiple Keys<a class="headerlink" href="#multiple-keys" title="Link to this heading"></a></h3>
+<p>A <code class="docutils literal notranslate"><span class="pre">:PublisherForKeys()</span></code> method is also provided which provides the entire state object to the
+publisher’s data chain whenever one of the specified properties changes. Using this is generally
+discouraged in favor of one of the other options listed above if at all possible. However, there
+are cases where this method is especially useful. For example, if you want to trigger some function
+call in response to any of the state changing, without necessarily caring about the specific state
+property values.</p>
+</section>
+</section>
+<section id="example">
+<h2>Example<a class="headerlink" href="#example" title="Link to this heading"></a></h2>
+<p>Below is an example which shows off the various ways to create publishers from a state object.</p>
+<div class="highlight-lua notranslate"><div class="highlight"><pre><span></span><span class="kd">local</span><span class="w"> </span><span class="nv">cancellables</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{}</span>
+<span class="kd">local</span><span class="w"> </span><span class="nv">OPERATION</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">EnumType</span><span class="p">.</span><span class="nf">New</span><span class="p">(</span><span class="s2">&quot;OPERATION&quot;</span><span class="p">,</span><span class="w"> </span><span class="p">{</span>
+<span class="w">   </span><span class="nv">TIMES</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">EnumType</span><span class="p">.</span><span class="nf">NewValue</span><span class="p">(),</span>
+<span class="w">   </span><span class="nv">DIVIDE</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">EnumType</span><span class="p">.</span><span class="nf">NewValue</span><span class="p">(),</span>
+<span class="p">})</span>
+<span class="kd">local</span><span class="w"> </span><span class="nv">STATE_SCHAME</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">Reactive</span><span class="p">.</span><span class="nf">CreateStateSchema</span><span class="p">(</span><span class="s2">&quot;TEST_STATE&quot;</span><span class="p">)</span>
+<span class="w">   </span><span class="p">:</span><span class="nf">AddEnumField</span><span class="p">(</span><span class="s2">&quot;operation&quot;</span><span class="p">,</span><span class="w"> </span><span class="nv">OPERATION</span><span class="p">,</span><span class="w"> </span><span class="nv">OPERATION</span><span class="p">.</span><span class="py">TIMES</span><span class="p">)</span>
+<span class="w">   </span><span class="p">:</span><span class="nf">AddNumberField</span><span class="p">(</span><span class="s2">&quot;num1&quot;</span><span class="p">,</span><span class="w"> </span><span class="mi">10</span><span class="p">)</span>
+<span class="w">   </span><span class="p">:</span><span class="nf">AddNumberField</span><span class="p">(</span><span class="s2">&quot;num2&quot;</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="p">)</span>
+<span class="w">   </span><span class="p">:</span><span class="nf">Commit</span><span class="p">()</span>
+<span class="kd">local</span><span class="w"> </span><span class="nv">state</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">STATE_SCHAME</span><span class="p">:</span><span class="nf">CreateState</span><span class="p">()</span>
+<span class="w">   </span><span class="p">:</span><span class="nf">SetAutoStore</span><span class="p">(</span><span class="nv">cancellables</span><span class="p">)</span>
+
+<span class="nv">state</span><span class="p">:</span><span class="nf">Publisher</span><span class="p">([[(</span><span class="nf">EnumEquals</span><span class="p">(</span><span class="nv">operation</span><span class="p">,</span><span class="w"> </span><span class="nv">TIMES</span><span class="p">)</span><span class="w"> </span><span class="ow">and</span><span class="w"> </span><span class="p">(</span><span class="nv">num1</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="nv">num2</span><span class="p">))</span><span class="w"> </span><span class="ow">or</span><span class="w"> </span><span class="p">(</span><span class="nv">num1</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="nv">num2</span><span class="p">)]])</span>
+<span class="w">   </span><span class="p">:</span><span class="nf">CallFunction</span><span class="p">(</span><span class="kr">function</span><span class="p">(</span><span class="nv">result</span><span class="p">)</span><span class="w"> </span><span class="nb">print</span><span class="p">(</span><span class="nf">format</span><span class="p">(</span><span class="s2">&quot;New result: %d&quot;</span><span class="p">,</span><span class="w"> </span><span class="nv">result</span><span class="p">))</span><span class="w"> </span><span class="kr">end</span><span class="p">)</span>
+<span class="c1">-- &quot;New result: 20&quot;</span>
+<span class="nv">state</span><span class="p">:</span><span class="nf">Publisher</span><span class="p">(</span><span class="s2">&quot;operation&quot;</span><span class="p">)</span>
+<span class="w">   </span><span class="p">:</span><span class="nf">CallFunction</span><span class="p">(</span><span class="kr">function</span><span class="p">(</span><span class="nv">operation</span><span class="p">)</span><span class="w"> </span><span class="nb">print</span><span class="p">(</span><span class="nf">format</span><span class="p">(</span><span class="s2">&quot;Operation changed: %s&quot;</span><span class="p">,</span><span class="w"> </span><span class="nb">tostring</span><span class="p">(</span><span class="nv">operation</span><span class="p">)))</span><span class="w"> </span><span class="kr">end</span><span class="p">)</span>
+<span class="c1">-- &quot;Operation changed: OPERATION.TIMES&quot;</span>
+
+<span class="nv">state</span><span class="p">.</span><span class="py">num2</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span>
+<span class="c1">-- &quot;New result: 10&quot;</span>
+
+<span class="c1">-- Change the operation such that the result doesn&#39;t change</span>
+<span class="nv">state</span><span class="p">.</span><span class="py">operation</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">OPERATION</span><span class="p">.</span><span class="py">DIVIDE</span>
+<span class="c1">-- &quot;Operation changed: OPERATION.DIVIDE&quot;</span>
+</pre></div>
+</div>
+</section>
+<section id="memory-management">
+<h2>Memory Management<a class="headerlink" href="#memory-management" title="Link to this heading"></a></h2>
+<p>The <code class="docutils literal notranslate"><span class="pre">ReactiveState</span></code> objects are intended to never be GC’d and have a static lifecycle (i.e. one
+that’s equal to the lifecycle of the application) and an internal reference is kept to them within
+LibTSMReactive which will prevent them from being GC’d.</p>
+</section>
+<section id="api">
+<h2>API<a class="headerlink" href="#api" title="Link to this heading"></a></h2>
+<dl class="lua class">
+<dt class="sig sig-object lua" id="lua-ReactiveState">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">ReactiveState</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">ReactiveSubject</span></code><a class="headerlink" href="#lua-ReactiveState" title="Link to this definition"></a><br /></dt>
+<dd><dl class="lua method">
+<dt class="sig sig-object lua" id="lua-ReactiveState.Publisher">
+<span class="sig-name descname"><span class="pre">Publisher</span></span><span class="p"><span class="pre">(</span></span><span class="n"><span class="pre">self</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#lua-ReactiveState" title="ReactiveState"><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">ReactiveState</span></code></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="n"><span class="pre">expressionStr</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">string</span></code><span class="p"><span class="pre">)</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="publisher_schema.html#lua-ReactivePublisherSchema" title="ReactivePublisherSchema"><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">ReactivePublisherSchema</span></code></a><a class="headerlink" href="#lua-ReactiveState.Publisher" title="Link to this definition"></a><br /></dt>
+<dd><p>Creates a publisher for an expression which operates on state fields.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>expressionStr</strong> (<code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">string</span></code>) – A valid lua expression which can only access fields of the state (as globals)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="lua method">
+<dt class="sig sig-object lua" id="lua-ReactiveState.PublisherForKeys">
+<span class="sig-name descname"><span class="pre">PublisherForKeys</span></span><span class="p"><span class="pre">(</span></span><span class="n"><span class="pre">self</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#lua-ReactiveState" title="ReactiveState"><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">ReactiveState</span></code></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="n"><span class="pre">...</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">string</span></code><span class="p"><span class="pre">)</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="publisher_schema.html#lua-ReactivePublisherSchema" title="ReactivePublisherSchema"><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">ReactivePublisherSchema</span></code></a><a class="headerlink" href="#lua-ReactiveState.PublisherForKeys" title="Link to this definition"></a><br /></dt>
+<dd><p>Creates a new publisher which publishes the state when any of the specified keys change.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>...</strong> (<code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">string</span></code>) – The keys to create a publisher for</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="lua method">
+<dt class="sig sig-object lua" id="lua-ReactiveState.PublisherForFunctionWithKeys">
+<span class="sig-name descname"><span class="pre">PublisherForFunctionWithKeys</span></span><span class="p"><span class="pre">(</span></span><br /><span class="w">&#160;&#160;&#160; </span><span class="n"><span class="pre">self</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#lua-ReactiveState" title="ReactiveState"><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">ReactiveState</span></code></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><br /><span class="w">&#160;&#160;&#160; </span><span class="n"><span class="pre">func</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="k"><span class="pre">fun</span></span><span class="p"><span class="pre">(</span></span><span class="n"><span class="pre">...</span></span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">any</span></code><span class="p"><span class="pre">)</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">any</span></code><span class="p"><span class="pre">,</span></span><span class="w"> </span><br /><span class="w">&#160;&#160;&#160; </span><span class="n"><span class="pre">...</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">string</span></code><br /><span class="p"><span class="pre">)</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="publisher_schema.html#lua-ReactivePublisherSchema" title="ReactivePublisherSchema"><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">ReactivePublisherSchema</span></code></a><a class="headerlink" href="#lua-ReactiveState.PublisherForFunctionWithKeys" title="Link to this definition"></a><br /></dt>
+<dd><p>Creates a new publisher which publishes the state when the result of a function which gets passed the specified keys changes.</p>
+<p>NOTE: The function must be constant and strictly depend on its inputs only.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>func</strong> (<span class="k">fun</span><span class="p">(</span><span class="n">...</span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">any</span></code><span class="p">)</span><span class="p">:</span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">any</span></code>) – The function which gets the values of the specified keys and returns the value to publish (if it changes)</p></li>
+<li><p><strong>...</strong> (<code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">string</span></code>) – The keys to pass to the function</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="lua method">
+<dt class="sig sig-object lua" id="lua-ReactiveState.SetAutoDeferred">
+<span class="sig-name descname"><span class="pre">SetAutoDeferred</span></span><span class="p"><span class="pre">(</span></span><span class="n"><span class="pre">self</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#lua-ReactiveState" title="ReactiveState"><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">ReactiveState</span></code></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="n"><span class="pre">deferred</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">boolean</span></code><span class="p"><span class="pre">)</span></span><a class="headerlink" href="#lua-ReactiveState.SetAutoDeferred" title="Link to this definition"></a><br /></dt>
+<dd><p>Sets whether or not new publishers which are added should be deferred and handled as late as possible.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>deferred</strong> (<code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">boolean</span></code>) – Whether or not to defer publishers</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="lua method">
+<dt class="sig sig-object lua" id="lua-ReactiveState.GetDefaultValue">
+<span class="sig-name descname"><span class="pre">GetDefaultValue</span></span><span class="p"><span class="pre">(</span></span><span class="n"><span class="pre">self</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#lua-ReactiveState" title="ReactiveState"><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">ReactiveState</span></code></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="n"><span class="pre">key</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">string</span></code><span class="p"><span class="pre">)</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">any</span></code><a class="headerlink" href="#lua-ReactiveState.GetDefaultValue" title="Link to this definition"></a><br /></dt>
+<dd><p>Gets the default value of a state field.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>key</strong> (<code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">string</span></code>) – The key to get the default value of</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="lua method">
+<dt class="sig sig-object lua" id="lua-ReactiveState.ResetToDefault">
+<span class="sig-name descname"><span class="pre">ResetToDefault</span></span><span class="p"><span class="pre">(</span></span><span class="n"><span class="pre">self</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#lua-ReactiveState" title="ReactiveState"><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">ReactiveState</span></code></a><span class="p"><span class="pre">)</span></span><a class="headerlink" href="#lua-ReactiveState.ResetToDefault" title="Link to this definition"></a><br /></dt>
+<dd><p>Resets the state to its default value.</p>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="lua method">
+<dt class="sig sig-object lua" id="lua-ReactiveState.SetAutoStore">
+<span class="sig-name descname"><span class="pre">SetAutoStore</span></span><span class="p"><span class="pre">(</span></span><span class="n"><span class="pre">self</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#lua-ReactiveState" title="ReactiveState"><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">ReactiveState</span></code></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="n"><span class="pre">tbl</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">table</span></code><span class="p"><span class="pre">)</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#lua-ReactiveState" title="ReactiveState"><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">ReactiveState</span></code></a><a class="headerlink" href="#lua-ReactiveState.SetAutoStore" title="Link to this definition"></a><br /></dt>
+<dd><p>Automatically stores any new publishers in the specified table.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>tbl</strong> (<code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">table</span></code>) – The table to store new publishers in</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="lua method">
+<dt class="sig sig-object lua" id="lua-ReactiveState.SetAutoStorePaused">
+<span class="sig-name descname"><span class="pre">SetAutoStorePaused</span></span><span class="p"><span class="pre">(</span></span><span class="n"><span class="pre">self</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#lua-ReactiveState" title="ReactiveState"><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">ReactiveState</span></code></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="n"><span class="pre">paused</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">boolean</span></code><span class="p"><span class="pre">)</span></span><a class="headerlink" href="#lua-ReactiveState.SetAutoStorePaused" title="Link to this definition"></a><br /></dt>
+<dd><p>Sets whether automatic storing of new publisher is paused.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>paused</strong> (<code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">boolean</span></code>) – Pause or unpause automatic storing of publishers</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="lua method">
+<dt class="sig sig-object lua" id="lua-ReactiveState.SetAutoDisable">
+<span class="sig-name descname"><span class="pre">SetAutoDisable</span></span><span class="p"><span class="pre">(</span></span><span class="n"><span class="pre">self</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#lua-ReactiveState" title="ReactiveState"><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">ReactiveState</span></code></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="n"><span class="pre">disable</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">boolean</span></code><span class="p"><span class="pre">)</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#lua-ReactiveState" title="ReactiveState"><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">ReactiveState</span></code></a><a class="headerlink" href="#lua-ReactiveState.SetAutoDisable" title="Link to this definition"></a><br /></dt>
+<dd><p>Sets whether or not new publishers are automatically disabled when stored.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>disable</strong> (<code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">boolean</span></code>) – Disable publishers when stored</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="lua method">
+<dt class="sig sig-object lua" id="lua-ReactiveState.WithAutoStorePaused">
+<span class="sig-name descname"><span class="pre">WithAutoStorePaused</span></span><span class="p"><span class="pre">(</span></span><span class="n"><span class="pre">self</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#lua-ReactiveState" title="ReactiveState"><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">ReactiveState</span></code></a><span class="p"><span class="pre">)</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">function</span></code><span class="p"><span class="pre">,</span></span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">any</span></code><span class="p"><span class="pre">,</span></span><span class="w"> </span><code class="xref lua lua-_auto docutils literal notranslate"><span class="pre">any</span></code><a class="headerlink" href="#lua-ReactiveState.WithAutoStorePaused" title="Link to this definition"></a><br /></dt>
+<dd><p>Returns an iterator which executes exactly once with auto store paused within the loop body.</p>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="state_schema.html" class="btn btn-neutral float-left" title="ReactiveStateSchema" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="stream.html" class="btn btn-neutral float-right" title="ReactiveStream" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, TradeSkillMaster LLC.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
