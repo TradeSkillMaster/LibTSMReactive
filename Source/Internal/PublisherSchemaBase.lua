@@ -211,10 +211,16 @@ end
 ---Ignores duplicate published values.
 ---@generic T: ReactivePublisherSchemaBase
 ---@param self T
+---@param hashFunc? string A method call (in the form "MyMethod()") to calculate the hash to check for equality
 ---@return T
-function ReactivePublisherSchemaBase:IgnoreDuplicates()
+function ReactivePublisherSchemaBase:IgnoreDuplicates(hashFunc)
 	---@cast self +ReactivePublisherSchemaBase
-	return self:_AddStepHelper(STEP.IGNORE_DUPLICATES)
+	if type(hashFunc) == "string" and strsub(hashFunc, -2) == "()" then
+		return self:_AddStepHelper(STEP.IGNORE_DUPLICATES_WITH_METHOD, strsub(hashFunc, 1, -3))
+	else
+		assert(hashFunc == nil)
+		return self:_AddStepHelper(STEP.IGNORE_DUPLICATES)
+	end
 end
 
 ---Ignores duplicate published values by checking the specified keys.

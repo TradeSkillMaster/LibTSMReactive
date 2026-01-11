@@ -31,6 +31,7 @@ local STEP = EnumType.New("PUBLISHER_STEP", {
 	IGNORE_IF_EQUALS = EnumType.NewValue(),
 	IGNORE_IF_NOT_EQUALS = EnumType.NewValue(),
 	IGNORE_DUPLICATES = EnumType.NewValue(),
+	IGNORE_DUPLICATES_WITH_METHOD = EnumType.NewValue(),
 	IGNORE_DUPLICATES_WITH_KEYS = EnumType.NewValue(),
 	PRINT = EnumType.NewValue(),
 	SHARE = EnumType.NewValue(),
