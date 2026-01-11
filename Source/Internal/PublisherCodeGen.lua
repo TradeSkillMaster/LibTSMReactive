@@ -254,6 +254,20 @@ STEP_INFO[STEP.IGNORE_DUPLICATES].codeTemplate =
   break
 end
 context[-%(ignoreIndex)d] = data]=]
+STEP_INFO[STEP.IGNORE_DUPLICATES_WITH_METHOD] = { argTypes = { ARG_TYPE.STRING }, numIgnoreContext = 1 }
+STEP_INFO[STEP.IGNORE_DUPLICATES_WITH_METHOD].codeTemplate =
+[=[do
+  local key = %(literal)s
+  local func = data[key]
+  if not func then
+    error("Method ("..tostring(key)..") does not exist on object ("..tostring(data)..")")
+  end
+  local ignoreValue = func(data)
+  if ignoreValue == context[-%(ignoreIndex)d] then
+    break
+  end
+  context[-%(ignoreIndex)d] = ignoreValue
+end]=]
 STEP_INFO[STEP.IGNORE_DUPLICATES_WITH_KEYS] = { argTypes = { ARG_TYPE.VARARG_STRING }, numIgnoreContext = -1 }
 STEP_INFO[STEP.IGNORE_DUPLICATES_WITH_KEYS].codeTemplate =
 [=[do
@@ -468,7 +482,7 @@ function ReactivePublisherCodeGen:AddStep(stepType, ...)
 		if stepType == STEP.MAP_WITH_KEY or stepType == STEP.IGNORE_IF_KEY_EQUALS or stepType == STEP.IGNORE_IF_KEY_NOT_EQUALS then
 			local arg1 = ...
 			self._optimizeKeys[arg1] = true
-		elseif stepType == STEP.IGNORE_DUPLICATES or stepType == STEP.MAP_TO_VALUE then
+		elseif stepType == STEP.IGNORE_DUPLICATES or stepType == STEP.IGNORE_DUPLICATES_WITH_METHOD or stepType == STEP.MAP_TO_VALUE then
 			self._optimizeResult = true
 		elseif stepType == STEP.IGNORE_DUPLICATES_WITH_KEYS then
 			for _, key in Vararg.Iterator(...) do
