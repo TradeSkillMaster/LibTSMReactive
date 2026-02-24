@@ -10,7 +10,7 @@ local ReactivePublisherSchemaShared = LibTSMReactive:DefineInternalClassType("Re
 local Util = LibTSMReactive:Include("Reactive.Util")
 local ObjectPool = LibTSMReactive:From("LibTSMUtil"):IncludeClassType("ObjectPool")
 local private = {
-	objectPool = ObjectPool.New("PUBLISHER_SCHEMA_SHARED", ReactivePublisherSchemaShared, 2), ---@type ObjectPool<ReactivePublisherSchemaShared>
+	objectPool = ObjectPool.New("PUBLISHER_SCHEMA_SHARED", ReactivePublisherSchemaShared, 2),
 }
 local STEP = Util.PUBLISHER_STEP
 
