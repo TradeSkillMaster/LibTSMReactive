@@ -165,7 +165,7 @@ end
 
 ---@protected
 function ReactivePublisherSchema:_AddStepFromSharedSchema(stepType, ...)
-	self:_AddStepHelper(stepType)
+	self:_AddStepHelper(stepType, ...)
 	return self
 end
 

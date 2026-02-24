@@ -30,7 +30,7 @@ local private = {
 ---@field autoStorePaused boolean
 ---@field autoDisable boolean
 ---@field handlingDataChange boolean
----@field dataChangeQueue string[]
+---@field dataChangeQueue (string|false)[]
 ---@field dataChangeTemp ReactivePublisher[]
 
 ---@class ReactiveExprBuiltins
@@ -251,7 +251,7 @@ function STATE_METHODS:_HandleDataChanged(key)
 	local context = private.stateContext[self]
 	if context.handlingDataChange then
 		-- We are already in the middle of processing another event, so queue this one up
-		tinsert(context.dataChangeQueue, key)
+		tinsert(context.dataChangeQueue, key ~= nil and key or false)
 		assert(#context.dataChangeQueue < 50)
 		return
 	end
@@ -260,7 +260,7 @@ function STATE_METHODS:_HandleDataChanged(key)
 	-- Process queued keys
 	while #context.dataChangeQueue > 0 do
 		local queuedKey = tremove(context.dataChangeQueue, 1)
-		self:_CallPublishersHandleData(queuedKey)
+		self:_CallPublishersHandleData(queuedKey ~= false and queuedKey or nil)
 	end
 	context.handlingDataChange = false
 end
