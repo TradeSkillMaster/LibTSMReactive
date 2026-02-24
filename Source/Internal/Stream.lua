@@ -10,7 +10,7 @@ local ReactivePublisherSchema = LibTSMReactive:IncludeClassType("ReactivePublish
 local OrderedTable = LibTSMReactive:From("LibTSMUtil"):Include("BaseType.OrderedTable")
 local ObjectPool = LibTSMReactive:From("LibTSMUtil"):IncludeClassType("ObjectPool")
 local private = {
-	objectPool = ObjectPool.New("STREAM", ReactiveStream, 0),
+	objectPool = ObjectPool.New("STREAM", ReactiveStream, 0), ---@type ObjectPool<ReactiveStream>
 }
 
 ---@class ReactiveStream: ReactiveSubject

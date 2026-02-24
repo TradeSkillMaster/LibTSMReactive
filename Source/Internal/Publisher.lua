@@ -9,7 +9,7 @@ local ReactivePublisher = LibTSMReactive:DefineInternalClassType("ReactivePublis
 local EnumType = LibTSMReactive:From("LibTSMUtil"):Include("BaseType.EnumType")
 local ObjectPool = LibTSMReactive:From("LibTSMUtil"):IncludeClassType("ObjectPool")
 local private = {
-	objectPool = ObjectPool.New("PUBLISHER", ReactivePublisher, 2),
+	objectPool = ObjectPool.New("PUBLISHER", ReactivePublisher, 2), ---@type ObjectPool<ReactivePublisher>
 }
 local STATE = EnumType.New("PUBLISHER_STATE", {
 	INIT = EnumType.NewValue(),
