@@ -73,7 +73,7 @@ Below is an example which shows off the various ways to create publishers from a
       TIMES = EnumType.NewValue(),
       DIVIDE = EnumType.NewValue(),
    })
-   local STATE_SCHAME = Reactive.CreateStateSchema("TEST_STATE")
+   local STATE_SCHAME = Reactive.CreateStateSchema("TestState")
       :AddEnumField("operation", OPERATION, OPERATION.TIMES)
       :AddNumberField("num1", 10)
       :AddNumberField("num2", 2)

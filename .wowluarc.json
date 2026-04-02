@@ -1,0 +1,14 @@
+
+{
+    "globals": {
+        "read": [
+            "TSMDEV"
+        ]
+    },
+    "ignore": [
+        ".vscode/",
+        "Docs/",
+        "LuaLSPlugin/",
+        "Tests/"
+    ]
+}

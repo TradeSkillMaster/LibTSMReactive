@@ -148,7 +148,7 @@ end
 
 ---Suppresses logs for a given action
 ---@param action string|boolean The action or true to suppress all actions
----@return UIManager
+---@return self
 function UIManager:SuppressActionLog(action)
 	if action == true then
 		self._suppressAllLogs = true
@@ -161,7 +161,7 @@ end
 
 ---Adds a UI frame building function.
 ---@param func fun(state: ReactiveState, ...: unknown): unknown The function which builds the UI
----@return UIManager
+---@return self
 function UIManager:AddFrameBuilder(func)
 	assert(type(func) == "function" and not self._frameBuilder)
 	self._frameBuilder = func

@@ -47,7 +47,6 @@ local function ProcessStateType(context, varName, expression, stateTypeHelperFun
 	if not typeName then
 		return
 	end
-	typeName = typeName:lower():gsub("_ui_", "_UI_"):gsub("^([a-z])", string.upper):gsub("_(.)", string.upper)
 	local codeLines = {}
 	for i = context.currentLine.index + 1, #context.lines do
 		local line = context.lines[i]

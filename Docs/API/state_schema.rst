@@ -64,7 +64,7 @@ Example
 
 Below is an exmaple of defining a simple state schema for text and button UI components. ::
 
-   local TEXT_STATE_SCHEMA = Reactive.CreateStateSchema("TEXT_STATE")
+   local TEXT_STATE_SCHEMA = Reactive.CreateStateSchema("TextState")
       :AddStringField("justifyH", "LEFT")
       :AddStringField("text", "")
       :Commit()

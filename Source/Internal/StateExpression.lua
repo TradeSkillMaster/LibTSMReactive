@@ -10,7 +10,7 @@ local EnumType = LibTSMReactive:From("LibTSMUtil"):Include("BaseType.EnumType")
 local String = LibTSMReactive:From("LibTSMUtil"):Include("Lua.String")
 local Table = LibTSMReactive:From("LibTSMUtil"):Include("Lua.Table")
 local private = {
-	cache = {}, ---@type table<ReactiveStateSchema,table<string,ReactiveStateExpression>>
+	cache = {}, ---@type table<string,ReactiveStateExpression>
 	linesTemp = {},
 	enumTemp = {},
 }
@@ -57,6 +57,7 @@ function ReactiveStateExpression.__private:__init(expressionStr)
 	self._keys = {}
 	self._enumInfo = {}
 	self._origExpression = expressionStr
+	self._code = nil
 	self:_Compile(expressionStr)
 end
 

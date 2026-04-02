@@ -71,7 +71,7 @@ function STATE_METHODS:Publisher(expressionStr)
 		publisher:IgnoreDuplicatesWithKeys(Table.UnpackAndWipe(private.keysTemp))
 	end
 	return publisher
-		:_MapWithStateExpression(expression) ---@diagnostic disable-line invisible
+		:_MapWithStateExpression(expression) ---@diagnostic disable-line: invisible
 		:IgnoreDuplicates()
 end
 
@@ -114,7 +114,7 @@ function STATE_METHODS:PublisherForFunctionWithKeys(func, ...)
 		assert(numArgs > 1)
 		return self:_GetPublisher()
 			:IgnoreDuplicatesWithKeys(...)
-			:_MapWithFunctionAndKeys(func, ...) ---@diagnostic disable-line invisible
+			:_MapWithFunctionAndKeys(func, ...) ---@diagnostic disable-line: invisible
 			:IgnoreDuplicates()
 	end
 end
@@ -144,7 +144,7 @@ end
 
 ---Automatically stores any new publishers in the specified table.
 ---@param tbl table The table to store new publishers in
----@return ReactiveState
+---@return self
 function STATE_METHODS:SetAutoStore(tbl)
 	local context = private.stateContext[self]
 	context.autoStore = tbl
@@ -161,7 +161,7 @@ end
 
 ---Sets whether or not new publishers are automatically disabled when stored.
 ---@param disable boolean Disable publishers when stored
----@return ReactiveState
+---@return self
 function STATE_METHODS:SetAutoDisable(disable)
 	local context = private.stateContext[self]
 	context.autoDisable = disable
@@ -182,10 +182,10 @@ function STATE_METHODS:_GetPublisher()
 	local context = private.stateContext[self]
 	local schema = ReactivePublisherSchema.Get(self)
 	if context.autoStore and not context.autoStorePaused then
-		schema:_AutoStore(context.autoStore) ---@diagnostic disable-line invisible
+		schema:_AutoStore(context.autoStore) ---@diagnostic disable-line: invisible
 	end
 	if context.autoDisable then
-		schema:_AutoDisable() ---@diagnostic disable-line invisible
+		schema:_AutoDisable() ---@diagnostic disable-line: invisible
 	end
 	return schema
 end

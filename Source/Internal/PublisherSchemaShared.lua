@@ -38,7 +38,7 @@ end
 
 function ReactivePublisherSchemaShared.__protected:__init()
 	self.__super:__init(true)
-	self._parentSchema = nil
+	self._parentSchema = nil ---@type ReactivePublisherSchemaBase!
 	self._codeGen = nil
 end
 
@@ -75,6 +75,7 @@ end
 -- ============================================================================
 
 function ReactivePublisherSchemaShared.__protected:_AddStepHelper(stepType, ...)
+	assert(self._codeGen)
 	self._codeGen:AddStep(stepType, ...)
 	return self
 end
@@ -86,7 +87,7 @@ function ReactivePublisherSchemaShared:_Commit()
 	local parentSchema = self._parentSchema
 	assert(not parentSchema:IsShared())
 	---@cast parentSchema ReactivePublisherSchema
-	local publisher = parentSchema:_Commit() ---@diagnostic disable-line invisible
+	local publisher = parentSchema:_Commit() ---@diagnostic disable-line: invisible
 	self:_Release()
 	return publisher
 end

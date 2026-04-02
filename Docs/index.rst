@@ -69,7 +69,7 @@ For the purposes of our example, we just need a single state field to track the 
 button has been clicked. This generally gets defined at the top of the module and is local to the
 file. ::
 
-   local STATE_SCHEMA = Reactive.CreateStateSchema("CLICK_COUNTER_UI_STATE")
+   local STATE_SCHEMA = Reactive.CreateStateSchema("ClickCounterUIState")
       :AddNumberField("numClicks", 0)
       :Commit()
 
