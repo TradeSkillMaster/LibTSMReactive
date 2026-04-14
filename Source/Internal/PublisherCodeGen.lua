@@ -380,7 +380,7 @@ function ReactivePublisherCodeGen.__private:__init()
 	self._firstIgnoreVarIndex = {}
 	self._totalNumIgnoreVars = 0
 	self._literals = {}
-	self._optimizeResult = nil
+	self._optimizeResult = nil ---@type boolean!
 	self._optimizeKeys = {}
 end
 
