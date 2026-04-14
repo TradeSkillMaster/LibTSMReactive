@@ -335,7 +335,7 @@ local STATE_MT = {
 ---Creates a new state object.
 ---@return ReactiveState
 function State.Create(schema)
-	local state = setmetatable({}, STATE_MT)
+	local state = setmetatable({}, STATE_MT) ---@type ReactiveState
 	local data = {}
 	schema:_ApplyDefaults(data)
 	private.stateContext[state] = {
