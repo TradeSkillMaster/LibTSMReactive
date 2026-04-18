@@ -168,6 +168,7 @@ end
 ---@protected
 function ReactivePublisherSchema:_Commit()
 	-- Commit the generated code to a publisher
+	assert(self._codeGen and self._subject)
 	local publisher = ReactivePublisher.Get(self._codeGen, self._subject)
 	self._codeGen = nil
 
