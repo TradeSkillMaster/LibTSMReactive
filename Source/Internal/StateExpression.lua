@@ -53,6 +53,7 @@ end
 -- Meta Class Methods
 -- ============================================================================
 
+---@param expressionStr string
 function ReactiveStateExpression.__private:__init(expressionStr)
 	self._keys = {}
 	self._enumInfo = {}
@@ -93,7 +94,7 @@ function ReactiveStateExpression:Validate(schema)
 end
 
 ---Gets the original expression.
----@return table
+---@return string
 function ReactiveStateExpression:GetOriginalExpression()
 	return self._origExpression
 end

@@ -5,6 +5,11 @@
             "TSMDEV"
         ]
     },
+    "diagnostics": {
+        "enable": [
+            "need-check-nil"
+        ]
+    },
     "ignore": [
         ".vscode/",
         "Docs/",
