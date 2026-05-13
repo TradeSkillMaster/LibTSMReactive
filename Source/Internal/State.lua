@@ -33,6 +33,11 @@ local private = {
 ---@field dataChangeQueue string[]
 ---@field dataChangeTemp ReactivePublisher[]
 
+---@class ReactiveExprBuiltins
+---@field min fun(a: number, b: number): number
+---@field max fun(a: number, b: number): number
+---@field EnumEquals fun(value: EnumValue, case: string) boolean
+
 
 
 -- ============================================================================
@@ -42,7 +47,7 @@ local private = {
 local STATE_METHODS = {} ---@class ReactiveState: ReactiveSubject
 
 ---Creates a publisher for an expression which operates on state fields.
----@param expressionStr string A valid lua expression which can only access fields of the state (as globals)
+---@param expressionStr expression<self & ReactiveExprBuiltins> A valid lua expression which can only access fields of the state (as globals)
 ---@return ReactivePublisherSchema
 function STATE_METHODS:Publisher(expressionStr)
 	local context = private.stateContext[self]
@@ -321,7 +326,9 @@ local STATE_MT = {
 	__tostring = function(self)
 		local context = private.stateContext[self]
 		local schemaName = strmatch(tostring(context.schema), "ReactiveStateSchema:(.+)") or "???"
-		return schemaName..":"..strsub(strmatch(tostring(context), "table:[^1-9a-fA-F]*([0-9a-fA-F]+)"), -8)
+		local ref = strmatch(tostring(context), "table:[^1-9a-fA-F]*([0-9a-fA-F]+)")
+		assert(ref)
+		return schemaName..":"..strsub(ref, -8)
 	end,
 	__metatable = false,
 }
