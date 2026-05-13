@@ -132,7 +132,7 @@ function ReactiveStateExpression.__private:_Compile(expression)
 	assert(#private.linesTemp == 0)
 
 	-- Replace EnumEquals() function calls and string literals
-	expression = gsub(expression, "EnumEquals%((.-),\"(.-)\"%)", self:__closure("_EnumEqualsSub"))
+	expression = gsub(expression, "EnumEquals%((.-),%s*\"(.-)\"%)", self:__closure("_EnumEqualsSub"))
 	expression = gsub(expression, "(\"(.-)\")", self:__closure("_StringLiteralSub"))
 
 	-- Process all the tokens
