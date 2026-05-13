@@ -10,7 +10,7 @@ local EnumType = LibTSMReactive:From("LibTSMUtil"):Include("BaseType.EnumType")
 local String = LibTSMReactive:From("LibTSMUtil"):Include("Lua.String")
 local Table = LibTSMReactive:From("LibTSMUtil"):Include("Lua.Table")
 local private = {
-	cache = {}, ---@type table<ReactiveStateSchema,table<string,ReactiveStateExpression>>
+	cache = {}, ---@type table<string,ReactiveStateExpression>
 	linesTemp = {},
 	enumTemp = {},
 }
@@ -53,10 +53,12 @@ end
 -- Meta Class Methods
 -- ============================================================================
 
+---@param expressionStr string
 function ReactiveStateExpression.__private:__init(expressionStr)
 	self._keys = {}
 	self._enumInfo = {}
 	self._origExpression = expressionStr
+	self._code = nil
 	self:_Compile(expressionStr)
 end
 
@@ -92,7 +94,7 @@ function ReactiveStateExpression:Validate(schema)
 end
 
 ---Gets the original expression.
----@return table
+---@return string
 function ReactiveStateExpression:GetOriginalExpression()
 	return self._origExpression
 end
@@ -130,7 +132,7 @@ function ReactiveStateExpression.__private:_Compile(expression)
 	assert(#private.linesTemp == 0)
 
 	-- Replace EnumEquals() function calls and string literals
-	expression = gsub(expression, "EnumEquals%((.-),(.-)%)", self:__closure("_EnumEqualsSub"))
+	expression = gsub(expression, "EnumEquals%((.-),%s*\"(.-)\"%)", self:__closure("_EnumEqualsSub"))
 	expression = gsub(expression, "(\"(.-)\")", self:__closure("_StringLiteralSub"))
 
 	-- Process all the tokens

@@ -38,7 +38,7 @@ end
 
 function ReactiveStream.__private:__init()
 	self._initalValueFunc = nil
-	self._publishers = {}
+	self._publishers = {} ---@type OrderedTable.Table<ReactivePublisher,true>
 	self._disabled = {}
 	self._noPublishersCallback = nil
 	self._sending = false
@@ -94,7 +94,7 @@ end
 
 ---Sets a callback for when there are no remaining publishers.
 ---@param handler fun(stream: ReactiveStream) The handler function
----@return ReactiveStream
+---@return self
 function ReactiveStream:SetNoPublishersCallback(handler)
 	assert(handler and not self._noPublishersCallback)
 	self._noPublishersCallback = handler

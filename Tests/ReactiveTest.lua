@@ -26,7 +26,7 @@ function TestState:tearDown()
 end
 
 function TestState:TestSetGetValues()
-	local state = Reactive.CreateStateSchema("TEST_SET_GET")
+	local state = Reactive.CreateStateSchema("TestSetGet")
 		:AddNumberField("num1", 0)
 		:AddStringField("str1", "")
 		:Commit()
@@ -49,7 +49,7 @@ function TestState:TestSetGetValues()
 end
 
 function TestState:TestPublisher()
-	local state = Reactive.CreateStateSchema("TEST_PUBLISHER")
+	local state = Reactive.CreateStateSchema("TestPublisher")
 		:AddNumberField("num1", 0)
 		:AddStringField("str1", "")
 		:AddOptionalTableField("tbl1")
@@ -135,7 +135,7 @@ function TestState:TestPublisher()
 end
 
 function TestState:TestNilDuplicates()
-	local state = Reactive.CreateStateSchema("TEST_PUBLISHER")
+	local state = Reactive.CreateStateSchema("TestPublisher")
 		:AddOptionalNumberField("num")
 		:Commit()
 		:CreateState()
@@ -162,7 +162,7 @@ function TestState:TestNilDuplicates()
 end
 
 function TestState:TestFunctionWithKeys()
-	local state = Reactive.CreateStateSchema("TEST_FUNCTION_WITH_KEYS")
+	local state = Reactive.CreateStateSchema("TestFunctionWithKeys")
 		:AddNumberField("num", 0)
 		:AddOptionalStringField("str")
 		:Commit()
@@ -219,7 +219,7 @@ function TestState:TestFunctionWithKeys()
 end
 
 function TestState:TestShare()
-	local state = Reactive.CreateStateSchema("TEST_SHARE")
+	local state = Reactive.CreateStateSchema("TestShare")
 		:AddNumberField("num", 0)
 		:Commit()
 		:CreateState()
@@ -259,7 +259,7 @@ function TestState:TestStateExpression()
 		BLUE = EnumType.NewValue(),
 		GREEN = EnumType.NewValue(),
 	})
-	local state = Reactive.CreateStateSchema("TEST_STATE_EXPRESSION")
+	local state = Reactive.CreateStateSchema("TestStateExpression")
 		:AddEnumField("color", COLOR, COLOR.RED)
 		:AddNumberField("num1", 10)
 		:AddNumberField("num2", 20)
@@ -273,9 +273,9 @@ function TestState:TestStateExpression()
 	local publishedValues3 = {}
 	state:Publisher([[num1 + num2]])
 		:CallFunction(function(value) tinsert(publishedValues1, value) end)
-	state:Publisher([[-1 * (EnumEquals(color, RED) and -num1 or -num2)]])
+	state:Publisher([[-1 * (EnumEquals(color, "RED") and -num1 or -num2)]])
 		:CallFunction(function(value) tinsert(publishedValues2, value) end)
-	state:Publisher([[(EnumEquals(color, RED) or EnumEquals(color, GREEN)) and "String 1" or "String 2"]])
+	state:Publisher([[(EnumEquals(color, "RED") or EnumEquals(color, "GREEN")) and "String 1" or "String 2"]])
 		:CallFunction(function(value) tinsert(publishedValues3, value) end)
 
 	assertEquals(publishedValues1, {30})
@@ -306,7 +306,7 @@ function TestState:TestStateExpression()
 end
 
 function TestState:TestDeferred()
-	local state = Reactive.CreateStateSchema("TEST_DEFER")
+	local state = Reactive.CreateStateSchema("TestDefer")
 		:AddStringField("str", "A")
 		:Commit()
 		:CreateState()
@@ -326,7 +326,7 @@ function TestState:TestDeferred()
 end
 
 function TestState:TestDisable()
-	local state = Reactive.CreateStateSchema("TEST_DIABLE")
+	local state = Reactive.CreateStateSchema("TestDisable")
 		:AddStringField("str", "A")
 		:Commit()
 		:CreateState()
@@ -357,12 +357,12 @@ function TestState:TestDisable()
 end
 
 function TestState:TestFlatMap()
-	local state1 = Reactive.CreateStateSchema("TEST_FLAT_MAP_1")
+	local state1 = Reactive.CreateStateSchema("TestFlatMap1")
 		:AddStringField("str", "A")
 		:Commit()
 		:CreateState()
 		:SetAutoStore(private.cancellables)
-	local state2 = Reactive.CreateStateSchema("TEST_FLAT_MAP_2")
+	local state2 = Reactive.CreateStateSchema("TestFlatMap2")
 		:AddStringField("str", "A")
 		:AddNumberField("num", 1)
 		:Commit()

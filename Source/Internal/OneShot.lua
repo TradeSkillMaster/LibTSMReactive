@@ -53,10 +53,10 @@ end
 function ReactiveOneShot:Publisher(autoDisable, autoStore)
 	local schema = ReactivePublisherSchema.Get(self)
 	if autoDisable then
-		schema:_AutoDisable() ---@diagnostic disable-line invisible
+		schema:_AutoDisable() ---@diagnostic disable-line: invisible
 	end
 	if autoStore then
-		schema:_AutoStore(autoStore) ---@diagnostic disable-line invisible
+		schema:_AutoStore(autoStore) ---@diagnostic disable-line: invisible
 	end
 	return schema
 end

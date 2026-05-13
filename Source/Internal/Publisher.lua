@@ -41,8 +41,8 @@ end
 
 function ReactivePublisher.__private:__init()
 	self._state = STATE.INIT
-	self._subject = nil
-	self._compiled = nil
+	self._subject = nil ---@type ReactiveSubject!
+	self._compiled = nil ---@type CompiledPublisherObject!
 	self._context = {}
 	self._optimizeResult = nil
 	self._optimizeKeys = {}
@@ -85,7 +85,7 @@ function ReactivePublisher:StoreIn(tbl)
 end
 
 ---Marks the publisher as stored and active.
----@return ReactivePublisher
+---@return self
 function ReactivePublisher:Stored()
 	assert(self._state == STATE.ACQUIRED)
 	self._state = STATE.STORED

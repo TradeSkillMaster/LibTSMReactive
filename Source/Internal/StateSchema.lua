@@ -28,6 +28,7 @@ end
 -- Meta Class Methods
 -- ============================================================================
 
+---@built-name 1
 function ReactiveStateSchema.__private:__init(name)
 	assert(name)
 	self._name = name
@@ -52,7 +53,8 @@ end
 ---@param key string The key of the new field
 ---@param default string The default value of the field
 ---@param validateFunc? fun(value: string): boolean A function used to validate values
----@return ReactiveStateSchema
+---@builds-field 1 string
+---@return self
 function ReactiveStateSchema:AddStringField(key, default, validateFunc)
 	return self:_AddField(key, "string", default, false, validateFunc)
 end
@@ -60,8 +62,18 @@ end
 ---Defines a string field as part of the schema which can be nil (and is by default).
 ---@param key string The key of the new field
 ---@param validateFunc? fun(value: string): boolean A function used to validate values
----@return ReactiveStateSchema
+---@builds-field 1 string?
+---@return self
 function ReactiveStateSchema:AddOptionalStringField(key, validateFunc)
+	return self:_AddField(key, "string", nil, true, validateFunc)
+end
+
+---Defines a string field as part of the schema which can be nil (and is by default) but is defined with a non-nil assertion for the language server.
+---@param key string The key of the new field
+---@param validateFunc? fun(value: string): boolean A function used to validate values
+---@builds-field 1 string!
+---@return self
+function ReactiveStateSchema:AddDeferredStringField(key, validateFunc)
 	return self:_AddField(key, "string", nil, true, validateFunc)
 end
 
@@ -69,7 +81,8 @@ end
 ---@param key string The key of the new field
 ---@param default number The default value of the field
 ---@param validateFunc? fun(value: number): boolean A function used to validate values
----@return ReactiveStateSchema
+---@builds-field 1 number
+---@return self
 function ReactiveStateSchema:AddNumberField(key, default, validateFunc)
 	return self:_AddField(key, "number", default, false, validateFunc)
 end
@@ -77,31 +90,61 @@ end
 ---Defines a number field as part of the schema which can be nil (and is by default).
 ---@param key string The key of the new field
 ---@param validateFunc? fun(value: number): boolean A function used to validate values
----@return ReactiveStateSchema
+---@builds-field 1 number?
+---@return self
 function ReactiveStateSchema:AddOptionalNumberField(key, validateFunc)
+	return self:_AddField(key, "number", nil, true, validateFunc)
+end
+
+---Defines a number field as part of the schema which can be nil (and is by default) but is defined with a non-nil assertion for the language server.
+---@param key string The key of the new field
+---@param validateFunc? fun(value: number): boolean A function used to validate values
+---@builds-field 1 number!
+---@return self
+function ReactiveStateSchema:AddDeferredNumberField(key, validateFunc)
 	return self:_AddField(key, "number", nil, true, validateFunc)
 end
 
 ---Defines a boolean field as part of the schema.
 ---@param key string The key of the new field
 ---@param default boolean The default value of the field
----@return ReactiveStateSchema
+---@builds-field 1 boolean
+---@return self
 function ReactiveStateSchema:AddBooleanField(key, default)
 	return self:_AddField(key, "boolean", default, false)
 end
 
 ---Defines a boolean field as part of the schema which can be nil (and is by default).
 ---@param key string The key of the new field
----@return ReactiveStateSchema
+---@builds-field 1 boolean?
+---@return self
 function ReactiveStateSchema:AddOptionalBooleanField(key)
+	return self:_AddField(key, "boolean", nil, true)
+end
+
+---Defines a boolean field as part of the schema which can be nil (and is by default) but is defined with a non-nil assertion for the language server.
+---@param key string The key of the new field
+---@builds-field 1 boolean!
+---@return self
+function ReactiveStateSchema:AddDeferredBooleanField(key)
 	return self:_AddField(key, "boolean", nil, true)
 end
 
 ---Defines a table field as part of the schema which can be nil (and is by default).
 ---@param key string The key of the new field
 ---@param validateFunc? fun(value: table): boolean A function used to validate values
----@return ReactiveStateSchema
+---@builds-field 1 table?
+---@return self
 function ReactiveStateSchema:AddOptionalTableField(key, validateFunc)
+	return self:_AddField(key, "table", nil, true, validateFunc)
+end
+
+---Defines a table field as part of the schema which can be nil (and is by default) but is defined with a non-nil assertion for the language server.
+---@param key string The key of the new field
+---@param validateFunc? fun(value: table): boolean A function used to validate values
+---@builds-field 1 table!
+---@return self
+function ReactiveStateSchema:AddDeferredTableField(key, validateFunc)
 	return self:_AddField(key, "table", nil, true, validateFunc)
 end
 
@@ -109,7 +152,8 @@ end
 ---@param key string The key of the new field
 ---@param enumType EnumObject The enum type
 ---@param default EnumValue The default value of the field
----@return ReactiveStateSchema
+---@builds-field 1 EnumValue
+---@return self
 function ReactiveStateSchema:AddEnumField(key, enumType, default)
 	assert(EnumType.IsType(enumType))
 	return self:_AddField(key, "enum", default, false, enumType)
@@ -118,8 +162,19 @@ end
 ---Defines an enum field field as part of the schema which can be nil (and is by default).
 ---@param key string The key of the new field
 ---@param enumType EnumObject The enum type
----@return ReactiveStateSchema
+---@builds-field 1 EnumValue?
+---@return self
 function ReactiveStateSchema:AddOptionalEnumField(key, enumType)
+	assert(EnumType.IsType(enumType))
+	return self:_AddField(key, "enum", nil, true, enumType)
+end
+
+---Defines an enum field field as part of the schema which can be nil (and is by default) but is defined with a non-nil assertion for the language server.
+---@param key string The key of the new field
+---@param enumType EnumObject The enum type
+---@builds-field 1 EnumValue!
+---@return self
+function ReactiveStateSchema:AddDeferredEnumField(key, enumType)
 	assert(EnumType.IsType(enumType))
 	return self:_AddField(key, "enum", nil, true, enumType)
 end
@@ -127,16 +182,27 @@ end
 ---Defines an optional class field as part of the schema which can be nil (and is by default).
 ---@generic T
 ---@param key string The key of the new field
----@param class `T`|string The class or name of the class (subclasses are not permitted in the later case)
----@return ReactiveStateSchema
+---@param class T|`T` The class or name of the class (subclasses are not permitted in the later case)
+---@builds-field 1 T?
+---@return self
 function ReactiveStateSchema:AddOptionalClassField(key, class)
+	return self:_AddField(key, "class", nil, true, class)
+end
+
+---Defines an optional class field as part of the schema which can be nil (and is by default) but is defined with a non-nil assertion for the language server.
+---@generic T
+---@param key string The key of the new field
+---@param class T|`T` The class or name of the class (subclasses are not permitted in the later case)
+---@builds-field 1 T!
+---@return self
+function ReactiveStateSchema:AddDeferredClassField(key, class)
 	return self:_AddField(key, "class", nil, true, class)
 end
 
 ---Updates the default value of an existing field.
 ---@param key string The key of the field
 ---@param default? any The default value of the field
----@return ReactiveStateSchema
+---@return self
 function ReactiveStateSchema:UpdateFieldDefault(key, default)
 	assert(not self._committed)
 	self:_ValidateValueForKey(key, default, true)
@@ -145,14 +211,14 @@ function ReactiveStateSchema:UpdateFieldDefault(key, default)
 end
 
 ---Commits the schema and prevents further changes.
----@return ReactiveStateSchema
+---@return self
 function ReactiveStateSchema:Commit()
 	self._committed = true
 	return self
 end
 
 ---Creates a state object based on the schema.
----@return ReactiveState
+---@return built: ReactiveState
 function ReactiveStateSchema:CreateState()
 	assert(self._committed)
 	return State.Create(self)
@@ -160,7 +226,9 @@ end
 
 ---Returns a new state schema which extends the existing one
 ---@param name string The name of the extended schema
----@return ReactiveStateSchema
+---@built-name 1
+---@built-extends
+---@return self
 function ReactiveStateSchema:Extend(name)
 	assert(self._committed)
 	local newSchema = ReactiveStateSchema(name)

@@ -380,7 +380,7 @@ function ReactivePublisherCodeGen.__private:__init()
 	self._firstIgnoreVarIndex = {}
 	self._totalNumIgnoreVars = 0
 	self._literals = {}
-	self._optimizeResult = nil
+	self._optimizeResult = nil ---@type boolean!
 	self._optimizeKeys = {}
 end
 
@@ -524,6 +524,7 @@ end
 function ReactivePublisherCodeGen.__private:_AddComment(stepType, argsStr)
 	local stepNum = #self._steps
 	local stepName = strmatch(tostring(stepType), "^PUBLISHER_STEP%.(.+)$")
+	assert(stepName)
 	stepName = gsub(stepName, "([^_]+)", private.UpperCamelCaseHelper)
 	stepName = gsub(stepName, "_", "")
 	self._comment[stepNum] = format("%s(%s)", stepName, argsStr)
@@ -609,7 +610,7 @@ function ReactivePublisherCodeGen.__private:_CompileFunction()
 			assert(shareDepth ~= 0 or stepNum == numSteps)
 			endSharedDataBlock = shareDepth > 0
 		else
-			assert(not info.shareType)
+			assert(not info.shareType and info.codeTemplate)
 			if info.hasCancellable then
 				numCancellables = numCancellables + 1
 			end

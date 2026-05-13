@@ -33,6 +33,11 @@ local private = {
 ---@field dataChangeQueue string[]
 ---@field dataChangeTemp ReactivePublisher[]
 
+---@class ReactiveExprBuiltins
+---@field min fun(a: number, b: number): number
+---@field max fun(a: number, b: number): number
+---@field EnumEquals fun(value: EnumValue, case: string) boolean
+
 
 
 -- ============================================================================
@@ -42,7 +47,7 @@ local private = {
 local STATE_METHODS = {} ---@class ReactiveState: ReactiveSubject
 
 ---Creates a publisher for an expression which operates on state fields.
----@param expressionStr string A valid lua expression which can only access fields of the state (as globals)
+---@param expressionStr expression<self & ReactiveExprBuiltins> A valid lua expression which can only access fields of the state (as globals)
 ---@return ReactivePublisherSchema
 function STATE_METHODS:Publisher(expressionStr)
 	local context = private.stateContext[self]
@@ -71,7 +76,7 @@ function STATE_METHODS:Publisher(expressionStr)
 		publisher:IgnoreDuplicatesWithKeys(Table.UnpackAndWipe(private.keysTemp))
 	end
 	return publisher
-		:_MapWithStateExpression(expression) ---@diagnostic disable-line invisible
+		:_MapWithStateExpression(expression) ---@diagnostic disable-line: invisible
 		:IgnoreDuplicates()
 end
 
@@ -114,7 +119,7 @@ function STATE_METHODS:PublisherForFunctionWithKeys(func, ...)
 		assert(numArgs > 1)
 		return self:_GetPublisher()
 			:IgnoreDuplicatesWithKeys(...)
-			:_MapWithFunctionAndKeys(func, ...) ---@diagnostic disable-line invisible
+			:_MapWithFunctionAndKeys(func, ...) ---@diagnostic disable-line: invisible
 			:IgnoreDuplicates()
 	end
 end
@@ -144,7 +149,7 @@ end
 
 ---Automatically stores any new publishers in the specified table.
 ---@param tbl table The table to store new publishers in
----@return ReactiveState
+---@return self
 function STATE_METHODS:SetAutoStore(tbl)
 	local context = private.stateContext[self]
 	context.autoStore = tbl
@@ -161,7 +166,7 @@ end
 
 ---Sets whether or not new publishers are automatically disabled when stored.
 ---@param disable boolean Disable publishers when stored
----@return ReactiveState
+---@return self
 function STATE_METHODS:SetAutoDisable(disable)
 	local context = private.stateContext[self]
 	context.autoDisable = disable
@@ -182,10 +187,10 @@ function STATE_METHODS:_GetPublisher()
 	local context = private.stateContext[self]
 	local schema = ReactivePublisherSchema.Get(self)
 	if context.autoStore and not context.autoStorePaused then
-		schema:_AutoStore(context.autoStore) ---@diagnostic disable-line invisible
+		schema:_AutoStore(context.autoStore) ---@diagnostic disable-line: invisible
 	end
 	if context.autoDisable then
-		schema:_AutoDisable() ---@diagnostic disable-line invisible
+		schema:_AutoDisable() ---@diagnostic disable-line: invisible
 	end
 	return schema
 end
@@ -321,7 +326,9 @@ local STATE_MT = {
 	__tostring = function(self)
 		local context = private.stateContext[self]
 		local schemaName = strmatch(tostring(context.schema), "ReactiveStateSchema:(.+)") or "???"
-		return schemaName..":"..strsub(strmatch(tostring(context), "table:[^1-9a-fA-F]*([0-9a-fA-F]+)"), -8)
+		local ref = strmatch(tostring(context), "table:[^1-9a-fA-F]*([0-9a-fA-F]+)")
+		assert(ref)
+		return schemaName..":"..strsub(ref, -8)
 	end,
 	__metatable = false,
 }
@@ -335,7 +342,7 @@ local STATE_MT = {
 ---Creates a new state object.
 ---@return ReactiveState
 function State.Create(schema)
-	local state = setmetatable({}, STATE_MT)
+	local state = setmetatable({}, STATE_MT) ---@type ReactiveState
 	local data = {}
 	schema:_ApplyDefaults(data)
 	private.stateContext[state] = {

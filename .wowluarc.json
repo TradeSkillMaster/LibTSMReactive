@@ -1,0 +1,17 @@
+
+{
+    "globals": {
+        "read": [
+            "TSMDEV"
+        ]
+    },
+    "diagnostics": {
+        "enable": [
+            "need-check-nil"
+        ]
+    },
+    "ignore": [
+        "Docs/",
+        "Tests/"
+    ]
+}
