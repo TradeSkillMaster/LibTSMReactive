@@ -13,7 +13,7 @@ local private = {
 	objectPool = ObjectPool.New("STREAM", ReactiveStream, 0),
 }
 
----@class ReactiveStream: ReactiveSubject
+---@class ReactiveStream<T>: ReactiveSubject<T>
 
 
 
@@ -22,8 +22,9 @@ local private = {
 -- ============================================================================
 
 ---Gets a stream object.
----@param initialValueFunc fun(): any A function to get the initial value to send to new publishers
----@return ReactiveStream
+---@generic T
+---@param initialValueFunc fun(): T A function to get the initial value to send to new publishers
+---@return ReactiveStream<T>
 function ReactiveStream.__static.Get(initialValueFunc)
 	local stream = private.objectPool:Get()
 	stream:_Acquire(initialValueFunc)
@@ -37,7 +38,7 @@ end
 -- ============================================================================
 
 function ReactiveStream.__private:__init()
-	self._initalValueFunc = nil
+	self._initalValueFunc = nil ---@type (fun(): T)!
 	self._publishers = {} ---@type OrderedTable.Table<ReactivePublisher,true>
 	self._disabled = {}
 	self._noPublishersCallback = nil
@@ -45,7 +46,7 @@ function ReactiveStream.__private:__init()
 	self._sendQueue = {}
 end
 
----@param initialValueFunc fun(): any
+---@param initialValueFunc fun(): T
 function ReactiveStream.__private:_Acquire(initialValueFunc)
 	assert(initialValueFunc)
 	self._initalValueFunc = initialValueFunc
@@ -67,13 +68,13 @@ function ReactiveStream:Release()
 end
 
 ---Creates a new publisher for the stream.
----@return ReactivePublisherSchema
+---@return ReactivePublisherSchema<T>
 function ReactiveStream:Publisher()
 	return ReactivePublisherSchema.Get(self)
 end
 
 ---Sends a new data value the stream's publishers.
----@param data any The data to send
+---@param data T The data to send
 function ReactiveStream:Send(data)
 	local sendQueue = self._sendQueue
 	assert(not self._sending and #sendQueue == 0)
@@ -137,7 +138,7 @@ function ReactiveStream:_SetPublisherDisabled(publisher, disabled)
 end
 
 ---@private
----@return any
+---@return T
 function ReactiveStream:_GetInitialValue()
 	return self._initalValueFunc()
 end
