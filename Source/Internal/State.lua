@@ -44,11 +44,13 @@ local private = {
 -- State Methods
 -- ============================================================================
 
-local STATE_METHODS = {} ---@class ReactiveState: ReactiveSubject
+---@class ReactiveState: ReactiveSubject<T>
+local STATE_METHODS = {}
 
 ---Creates a publisher for an expression which operates on state fields.
----@param expressionStr expression<self & ReactiveExprBuiltins> A valid lua expression which can only access fields of the state (as globals)
----@return ReactivePublisherSchema
+---@generic R
+---@param expressionStr expression<self & ReactiveExprBuiltins, R> A valid lua expression which can only access fields of the state (as globals)
+---@return ReactivePublisherSchema<R>
 function STATE_METHODS:Publisher(expressionStr)
 	local context = private.stateContext[self]
 	if context.schema:_HasKey(expressionStr) then ---@diagnostic disable-line: invisible

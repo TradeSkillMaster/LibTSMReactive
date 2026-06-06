@@ -24,17 +24,19 @@ function Reactive.CreateStateSchema(name)
 end
 
 ---Gets a stream object.
----@param initialValueFunc fun(): any A function to get the initial value to send to new publishers
----@return ReactiveStream
+---@generic T
+---@param initialValueFunc fun(): T A function to get the initial value to send to new publishers
+---@return ReactiveStream<T>
 function Reactive.GetStream(initialValueFunc)
 	return ReactiveStream.Get(initialValueFunc)
 end
 
 ---Gets a publisher which publishes a single initial value and never again.
----@param value any The value to publish
+---@generic T
+---@param value T The value to publish
 ---@param autoDisable? boolean Whether or not to automatically disable the publisher
 ---@param autoStore? table The table to store the publisher in automatically
----@return ReactivePublisherSchema
+---@return ReactivePublisherSchema<T>
 function Reactive.GetOneShotPublisher(value, autoDisable, autoStore)
 	return ReactiveOneShot.GetPublisher(value, autoDisable, autoStore)
 end

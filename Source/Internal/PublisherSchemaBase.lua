@@ -9,7 +9,7 @@ local ReactivePublisherSchemaBase = LibTSMReactive:DefineInternalClassType("Reac
 local Util = LibTSMReactive:Include("Reactive.Util")
 local STEP = Util.PUBLISHER_STEP
 
----@alias ReactivePublisherMapFunc fun(value: any, arg: any): any
+---@class ReactivePublisherSchemaBase<T>
 
 
 
@@ -34,8 +34,11 @@ function ReactivePublisherSchemaBase:IsShared()
 end
 
 ---Map published values to another value.
----@param map ReactivePublisherMapFunc|string|number|table Either a map function, table key (string or number) to index, method call (in the form "MyMethod()"), or lookup table
----@param arg? any An additional argument to pass to a map function
+---@generic A, R
+---@overload fun(map: (fun(value: T, arg: A): R), arg?: A): self<R>
+---@overload fun(map: table<T,R>): self<R>
+---@param map (fun(value: T, arg: A): any)|string|number|table<T,R> Either a map function, table key (string or number) to index, method call (in the form "MyMethod()"), or lookup table
+---@param arg? A An additional argument to pass to a map function
 ---@return self
 function ReactivePublisherSchemaBase:Map(map, arg)
 	local mapType = type(map)
@@ -56,8 +59,10 @@ function ReactivePublisherSchemaBase:Map(map, arg)
 end
 
 ---Map non-nil publishes values to another value.
----@param map ReactivePublisherMapFunc|string Either a map function or method call (in the form "MyMethod()") for non-nil values
----@param arg? any An additinoal argument to pass to the map function or method
+---@generic A, R
+---@overload fun(map: (fun(value: T, arg: A): R), arg?: A): self<R>
+---@param map (fun(value: T, arg: A): R)|string Either a map function or method call (in the form "MyMethod()") for non-nil values
+---@param arg? A An additional argument to pass to the map function or method
 ---@return self
 function ReactivePublisherSchemaBase:MapNonNil(map, arg)
 	local mapType = type(map)
@@ -72,71 +77,79 @@ function ReactivePublisherSchemaBase:MapNonNil(map, arg)
 end
 
 ---Coalesces nil published values to a specific value.
----@param value any The value to map to
----@return self
+---@generic V
+---@param value V The value to map to
+---@return self<T!|V>
 function ReactivePublisherSchemaBase:CoalesceNil(value)
 	return self:_AddStepHelper(STEP.MAP_NIL_TO_VALUE, value)
 end
 
 ---Invert published boolean values.
----@return self
+---@requires T: boolean
+---@return self<boolean>
 function ReactivePublisherSchemaBase:InvertBoolean()
 	return self:_AddStepHelper(STEP.INVERT_BOOLEAN)
 end
 
 ---Map published values to a boolean based on whether or not it equals the specified value.
----@param value any The value to compare with
----@return self
+---@param value T The value to compare with
+---@return self<boolean>
 function ReactivePublisherSchemaBase:ToBooleanEquals(value)
 	return self:_AddStepHelper(STEP.MAP_BOOLEAN_EQUALS, value)
 end
 
 ---Map published values to a boolean based on whether or not it equals the specified value.
----@param value any The value to compare with
----@return self
+---@param value T The value to compare with
+---@return self<boolean>
 function ReactivePublisherSchemaBase:ToBooleanNotEquals(value)
 	return self:_AddStepHelper(STEP.MAP_BOOLEAN_NOT_EQUALS, value)
 end
 
 ---Map published values to a boolean based on whether or not it is greater than or equal to the specified value.
----@param value string|number The value to compare with
----@return self
+---@requires T: string|number
+---@param value T The value to compare with
+---@return self<boolean>
 function ReactivePublisherSchemaBase:ToBooleanGreaterThanOrEquals(value)
 	return self:_AddStepHelper(STEP.MAP_BOOLEAN_GREATER_THAN_OR_EQUALS, value)
 end
 
 ---Map published values to a boolean based on whether or not it is less than or equal to the specified value.
----@param value string|number The value to compare with
----@return self
+---@requires T: string|number
+---@param value T The value to compare with
+---@return self<boolean>
 function ReactivePublisherSchemaBase:ToBooleanLessThanOrEquals(value)
 	return self:_AddStepHelper(STEP.MAP_BOOLEAN_LESS_THAN_OR_EQUALS, value)
 end
 
 ---Map published values as arguments to a format string.
 ---@param formatStr string The string to format with the published values
----@return self
+---@return self<string>
 function ReactivePublisherSchemaBase:ToStringFormat(formatStr)
 	return self:_AddStepHelper(STEP.MAP_STRING_FORMAT, formatStr)
 end
 
 ---Replaces published values with the specific value.
----@param value any The value to replace with
----@return self
+---@generic V
+---@param value V The value to replace with
+---@return self<V>
 function ReactivePublisherSchemaBase:ReplaceWith(value)
 	return self:_AddStepHelper(STEP.MAP_TO_VALUE, value)
 end
 
 ---Replaces published boolean values with the specified true / false values.
----@param trueValue any The value to replace with to if true
----@param falseValue any The value to replace with to if false
----@return self
+---@requires T: boolean
+---@generic V1, V2
+---@param trueValue V1 The value to replace with to if true
+---@param falseValue V2 The value to replace with to if false
+---@return self<V1|V2>
 function ReactivePublisherSchemaBase:ReplaceBooleanWith(trueValue, falseValue)
 	return self:_AddStepHelper(STEP.MAP_BOOLEAN_WITH_VALUES, trueValue, falseValue)
 end
 
 ---Ignores published values which equal the specified value.
----@param value string|number|boolean|nil The value to compare against
----@param key? string|number The key to access for filtering
+---@generic V, K: keyof T
+---@param value V The value to compare against
+---@param key? K The key to access for filtering
 ---@return self
 function ReactivePublisherSchemaBase:IgnoreIfEquals(value, key)
 	if key == nil then
@@ -148,8 +161,9 @@ function ReactivePublisherSchemaBase:IgnoreIfEquals(value, key)
 end
 
 ---Ignores published values which don't equal the specified value.
----@param value string|number|boolean|nil The value to compare against
----@param key? string|number The key to access for filtering
+---@generic V, K: keyof T
+---@param value V The value to compare against
+---@param key? K The key to access for filtering
 ---@return self
 function ReactivePublisherSchemaBase:IgnoreIfNotEquals(value, key)
 	if key == nil then
@@ -161,7 +175,7 @@ function ReactivePublisherSchemaBase:IgnoreIfNotEquals(value, key)
 end
 
 ---Ignores published values if it's nil.
----@return self
+---@return self<T!>
 function ReactivePublisherSchemaBase:IgnoreNil()
 	return self:_AddStepHelper(STEP.IGNORE_IF_EQUALS, nil)
 end
@@ -179,7 +193,8 @@ function ReactivePublisherSchemaBase:IgnoreDuplicates(hashFunc)
 end
 
 ---Ignores duplicate published values by checking the specified keys.
----@param ... string Keys to compare to detect duplicate published values
+---@generic K: keyof T
+---@param ... K Keys to compare to detect duplicate published values
 ---@return self
 function ReactivePublisherSchemaBase:IgnoreDuplicatesWithKeys(...)
 	return self:_AddStepHelper(STEP.IGNORE_DUPLICATES_WITH_KEYS, ...)
@@ -193,8 +208,9 @@ function ReactivePublisherSchemaBase:Print(tag)
 end
 
 ---Calls a method with the published values.
----@param obj table The object to call the method on
----@param method string The name of the method to call with the published values
+---@generic Obj, K: keyof Obj
+---@param obj Obj The object to call the method on
+---@param method K The name of the method to call with the published values
 ---@param arg? any An additional argument to pass to the method
 ---@return self
 function ReactivePublisherSchemaBase:CallMethod(obj, method, arg)
@@ -202,8 +218,9 @@ function ReactivePublisherSchemaBase:CallMethod(obj, method, arg)
 end
 
 ---Calls a function with the published values.
----@param func fun(value: any, arg: any) The function to call with the published values
----@param arg? any An additional argument to pass to the function
+---@generic A
+---@param func fun(value: T, arg: A) The function to call with the published values
+---@param arg? A An additional argument to pass to the function
 ---@return self
 function ReactivePublisherSchemaBase:CallFunction(func, arg)
 	return self:_AddStepHelper(STEP.CALL_FUNCTION, func, arg)
@@ -218,9 +235,10 @@ function ReactivePublisherSchemaBase:AssignToTableKey(tbl, key)
 end
 
 ---Maps published values to a new publisher which is owned by the current publisher and call a method with values it publishes.
----@param map ReactivePublisherFlatMapFunc A function which takes a published value and returns a new publisher
----@param obj table The object to call the method on
----@param method string The name of the method to call with the published values
+---@generic Obj, K: keyof Obj
+---@param map ReactivePublisherFlatMapFunc<T> A function which takes a published value and returns a new publisher
+---@param obj Obj The object to call the method on
+---@param method K The name of the method to call with the published values
 ---@param arg? any An additional argument to pass to the method
 ---@return self
 function ReactivePublisherSchemaBase:FlatMapCallMethod(map, obj, method, arg)
@@ -228,9 +246,10 @@ function ReactivePublisherSchemaBase:FlatMapCallMethod(map, obj, method, arg)
 end
 
 ---Maps published values to a new publisher which is owned by the current publisher and call a function with values it publishes.
----@param map ReactivePublisherFlatMapFunc A function which takes a published value and returns a new publisher
----@param func fun(value: any) The function to call with the published values
----@param arg? any An additional argument to pass to the function
+---@generic A
+---@param map ReactivePublisherFlatMapFunc<T> A function which takes a published value and returns a new publisher
+---@param func fun(value: T, arg: A) The function to call with the published values
+---@param arg? A An additional argument to pass to the function
 ---@return self
 function ReactivePublisherSchemaBase:FlatMapCallFunction(map, func, arg)
 	return self:_AddStepHelper(STEP.FLAT_MAP_CALL_FUNCTION, map, func, arg)

@@ -17,6 +17,8 @@ local private = {
 }
 local STEP = Util.PUBLISHER_STEP
 
+---@class ReactivePublisherSchema<T> : ReactivePublisherSchemaBase<T>
+
 
 
 -- ============================================================================
@@ -24,8 +26,9 @@ local STEP = Util.PUBLISHER_STEP
 -- ============================================================================
 
 ---Gets a publisher schema object.
----@param subject ReactiveSubject The subject which is publishing values
----@return ReactivePublisherSchema
+---@generic T
+---@param subject ReactiveSubject<T> The subject which is publishing values
+---@return ReactivePublisherSchema<T>
 function ReactivePublisherSchema.__static.Get(subject)
 	local publisher = private.objectPool:Get()
 	publisher:_Acquire(subject)
@@ -47,7 +50,7 @@ function ReactivePublisherSchema.__protected:__init()
 	self._hasShare = false
 end
 
----@param subject ReactiveSubject
+---@param subject ReactiveSubject<T>
 function ReactivePublisherSchema.__protected:_Acquire(subject)
 	self._subject = subject
 end
@@ -68,7 +71,7 @@ end
 -- ============================================================================
 
 ---Shares the result of the publisher at the current point in the chain.
----@return ReactivePublisherSchemaShared
+---@return ReactivePublisherSchemaShared<T,T>
 ---@nodiscard
 function ReactivePublisherSchema:Share()
 	assert(not self._hasShare)
@@ -79,8 +82,9 @@ function ReactivePublisherSchema:Share()
 end
 
 ---Calls a method with the published values.
----@param obj table The object to call the method on
----@param method string The name of the method to call with the published values
+---@generic Obj, K: keyof Obj
+---@param obj Obj The object to call the method on
+---@param method K The name of the method to call with the published values
 ---@param arg? any An additional argument to pass to the method
 ---@return ReactivePublisher
 function ReactivePublisherSchema:CallMethod(obj, method, arg)
@@ -90,7 +94,7 @@ function ReactivePublisherSchema:CallMethod(obj, method, arg)
 end
 
 ---Calls a function with the published values.
----@param func fun(value: any) The function to call with the published values
+---@param func fun(value: T) The function to call with the published values
 ---@param arg? any An additional argument to pass to the function
 ---@return ReactivePublisher
 function ReactivePublisherSchema:CallFunction(func, arg)
@@ -110,7 +114,7 @@ function ReactivePublisherSchema:AssignToTableKey(tbl, key)
 end
 
 ---Maps published values to a new publisher which is owned by the current publisher and call a method with values it publishes.
----@param map ReactivePublisherFlatMapFunc A function which takes a published value and returns a new publisher
+---@param map ReactivePublisherFlatMapFunc<T> A function which takes a published value and returns a new publisher
 ---@param obj table The object to call the method on
 ---@param method string The name of the method to call with the published values
 ---@param arg? any An additional argument to pass to the method
@@ -122,7 +126,7 @@ function ReactivePublisherSchema:FlatMapCallMethod(map, obj, method, arg)
 end
 
 ---Maps published values to a new publisher which is owned by the current publisher and call a function with values it publishes.
----@param map ReactivePublisherFlatMapFunc A function which takes a published value and returns a new publisher
+---@param map ReactivePublisherFlatMapFunc<T> A function which takes a published value and returns a new publisher
 ---@param func fun(value: any) The function to call with the published values
 ---@param arg? any An additional argument to pass to the function
 ---@return ReactivePublisher

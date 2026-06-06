@@ -1,17 +1,21 @@
-
 {
+    "diagnostics": {
+        "enable": [
+            "need-check-nil",
+            "nil-index",
+            "invalid-op",
+            "redundant-or",
+            "redundant-and"
+        ]
+    },
     "globals": {
         "read": [
             "TSMDEV"
         ]
     },
-    "diagnostics": {
-        "enable": [
-            "need-check-nil"
-        ]
-    },
     "ignore": [
         "Docs/",
         "Tests/"
-    ]
+    ],
+    "framexml": false
 }

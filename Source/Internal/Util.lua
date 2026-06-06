@@ -44,11 +44,11 @@ local STEP = EnumType.New("PUBLISHER_STEP", {
 })
 Util.PUBLISHER_STEP = STEP
 
----@class ReactiveSubject
----@field _AddPublisher fun(self: ReactiveSubject, publisher: ReactivePublisher)
----@field _RemovePublisher fun(self: ReactiveSubject, publisher: ReactivePublisher)
----@field _SetPublisherDisabled fun(self: ReactiveSubject, publisher: ReactivePublisher, disabled: boolean)
----@field _GetInitialValue fun(self: ReactiveSubject): any
+---@class ReactiveSubject<T>
+---@field _AddPublisher fun(self: ReactiveSubject<T>, publisher: ReactivePublisher)
+---@field _RemovePublisher fun(self: ReactiveSubject<T>, publisher: ReactivePublisher)
+---@field _SetPublisherDisabled fun(self: ReactiveSubject<T>, publisher: ReactivePublisher, disabled: boolean)
+---@field _GetInitialValue fun(self: ReactiveSubject<T>): T
 ---@field _RequiresOptimized fun(): boolean
 
----@alias ReactivePublisherFlatMapFunc fun(value: any): ReactivePublisherSchema
+---@alias ReactivePublisherFlatMapFunc<T> fun(value: T): ReactivePublisherSchema

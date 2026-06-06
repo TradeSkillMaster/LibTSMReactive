@@ -14,6 +14,8 @@ local private = {
 }
 local STEP = Util.PUBLISHER_STEP
 
+---@class ReactivePublisherSchemaShared<TCur,TShared> : ReactivePublisherSchemaBase<TCur>
+
 
 
 -- ============================================================================
@@ -66,6 +68,54 @@ end
 function ReactivePublisherSchemaShared:EndShare()
 	self:_AddStepHelper(STEP.END_SHARE)
 	return self:_Commit()
+end
+
+---Calls a method with the published values.
+---@generic Obj, K: keyof Obj
+---@param obj Obj The object to call the method on
+---@param method K The name of the method to call with the published values
+---@param arg? any An additional argument to pass to the method
+---@return self<TShared,TShared>
+function ReactivePublisherSchemaShared:CallMethod(obj, method, arg)
+	return self.__super:CallMethod(obj, method, arg)
+end
+
+---Calls a function with the published values.
+---@generic A
+---@param func fun(value: TCur, arg: A) The function to call with the published values
+---@param arg? A An additional argument to pass to the function
+---@return self<TShared,TShared>
+function ReactivePublisherSchemaShared:CallFunction(func, arg)
+	return self.__super:CallFunction(func, arg)
+end
+
+---Assigns published values to the specified key in the table.
+---@param tbl table The table to assign the published values into
+---@param key string The key to assign the published values at
+---@return self<TShared,TShared>
+function ReactivePublisherSchemaShared:AssignToTableKey(tbl, key)
+	return self.__super:AssignToTableKey(tbl, key)
+end
+
+---Maps published values to a new publisher which is owned by the current publisher and call a method with values it publishes.
+---@generic Obj, K: keyof Obj
+---@param map ReactivePublisherFlatMapFunc<TCur> A function which takes a published value and returns a new publisher
+---@param obj Obj The object to call the method on
+---@param method K The name of the method to call with the published values
+---@param arg? any An additional argument to pass to the method
+---@return self<TShared,TShared>
+function ReactivePublisherSchemaShared:FlatMapCallMethod(map, obj, method, arg)
+	return self.__super:FlatMapCallMethod(map, obj, method, arg)
+end
+
+---Maps published values to a new publisher which is owned by the current publisher and call a function with values it publishes.
+---@generic A
+---@param map ReactivePublisherFlatMapFunc<TCur> A function which takes a published value and returns a new publisher
+---@param func fun(value: TCur, arg: A) The function to call with the published values
+---@param arg? A An additional argument to pass to the function
+---@return self<TShared,TShared>
+function ReactivePublisherSchemaShared:FlatMapCallFunction(map, func, arg)
+	return self.__super:FlatMapCallFunction(map, func, arg)
 end
 
 

@@ -11,7 +11,7 @@ local private = {
 	cache = {},
 }
 
----@class ReactiveOneShot: ReactiveSubject
+---@class ReactiveOneShot<T>: ReactiveSubject<T>
 
 
 
@@ -20,10 +20,11 @@ local private = {
 -- ============================================================================
 
 ---Gets a one-shot publisher.
----@param value any The value to publish
+---@generic T
+---@param value T The value to publish
 ---@param autoDisable? boolean Whether or not to automatically disable the publisher
 ---@param autoStore? table The table to store the publisher in automatically
----@return ReactivePublisherSchema
+---@return ReactivePublisherSchema<T>
 function ReactiveOneShot.__static.GetPublisher(value, autoDisable, autoStore)
 	assert(value ~= nil)
 	local oneShot = private.cache[value] or ReactiveOneShot(value)
@@ -49,7 +50,7 @@ end
 ---Creates a new publisher for the one-shot.
 ---@param autoDisable? boolean Automatically disable the publisher
 ---@param autoStore? table The table to store new publishers in
----@return ReactivePublisherSchema
+---@return ReactivePublisherSchema<T>
 function ReactiveOneShot:Publisher(autoDisable, autoStore)
 	local schema = ReactivePublisherSchema.Get(self)
 	if autoDisable then
@@ -87,7 +88,7 @@ function ReactiveOneShot:_SetPublisherDisabled(publisher, disabled)
 end
 
 ---@private
----@return any
+---@return T
 function ReactiveOneShot:_GetInitialValue()
 	return self._value
 end
