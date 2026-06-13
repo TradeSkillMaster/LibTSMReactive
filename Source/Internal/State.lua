@@ -304,10 +304,14 @@ end
 -- State Metatable
 -- ============================================================================
 
-local STATE_MT = {
+local STATE_MT = nil
+STATE_MT = {
 	__index = function(self, key)
 		if STATE_METHODS[key] then
 			return STATE_METHODS[key]
+		elseif key == "ToDebugString" then
+			-- Wow calls this - defer to __tostring
+			return STATE_MT.__tostring
 		end
 		local context = private.stateContext[self]
 		if not context.schema:_HasKey(key) then ---@diagnostic disable-line: invisible
