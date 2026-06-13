@@ -97,7 +97,7 @@ end
 ---@param handler fun(stream: ReactiveStream) The handler function
 ---@return self
 function ReactiveStream:SetNoPublishersCallback(handler)
-	assert(handler and not self._noPublishersCallback)
+	assert(not self._noPublishersCallback)
 	self._noPublishersCallback = handler
 	return self
 end

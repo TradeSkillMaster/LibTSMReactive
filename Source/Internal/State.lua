@@ -13,7 +13,7 @@ local Table = LibTSMReactive:From("LibTSMUtil"):Include("Lua.Table")
 local Vararg = LibTSMReactive:From("LibTSMUtil"):Include("Lua.Vararg")
 local private = {
 	nextPublisherId = 1,
-	stateContext = {}, ---@type table<ReactiveState,StateContext>
+	stateContext = {}, ---@type table<ReactiveState,StateContext!>
 	debugLinesTemp = {},
 	keysTemp = {},
 	contextManager = ContextManager.Create(function(state) state:SetAutoStorePaused(true) return state end, function(state) state:SetAutoStorePaused(false) end),
@@ -36,7 +36,7 @@ local private = {
 ---@class ReactiveExprBuiltins
 ---@field min fun(a: number, b: number): number
 ---@field max fun(a: number, b: number): number
----@field EnumEquals fun(value: EnumValue, case: string) boolean
+---@field EnumEquals fun(value: EnumValue, case: string): boolean
 
 
 

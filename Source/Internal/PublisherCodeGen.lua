@@ -93,7 +93,7 @@ local TERMINAL_STEPS = {
 ---@field codeTemplate string?
 ---@field numIgnoreContext number?
 ---@field numExtraContextArgs number?
----@field shareType userdata?
+---@field shareType EnumValue?
 ---@field hasCancellable boolean?
 ---@field isTerminal boolean
 ---@field ignoreOptimization boolean
@@ -107,7 +107,7 @@ local TERMINAL_STEPS = {
 
 local FUNC_ENV = setmetatable({
 	Dump = function(...)
-		if not TSMDEV then
+		if not TSMDEV then ---@diagnostic disable-line: redundant-condition
 			return
 		end
 		TSMDEV.Dump(...)
