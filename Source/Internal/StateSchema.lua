@@ -148,7 +148,7 @@ function ReactiveStateSchema:AddDeferredTableField(key, validateFunc)
 	return self:_AddField(key, "table", nil, true, validateFunc)
 end
 
----Defines an enum field field as part of the schema.
+---Defines an enum field as part of the schema.
 ---@param key string The key of the new field
 ---@param enumType EnumObject The enum type
 ---@param default EnumValue The default value of the field
@@ -159,7 +159,7 @@ function ReactiveStateSchema:AddEnumField(key, enumType, default)
 	return self:_AddField(key, "enum", default, false, enumType)
 end
 
----Defines an enum field field as part of the schema which can be nil (and is by default).
+---Defines an enum field as part of the schema which can be nil (and is by default).
 ---@param key string The key of the new field
 ---@param enumType EnumObject The enum type
 ---@builds-field 1 EnumValue?

@@ -38,7 +38,7 @@ end
 -- ============================================================================
 
 function ReactiveStream.__private:__init()
-	self._initalValueFunc = nil ---@type (fun(): T)!
+	self._initialValueFunc = nil ---@type (fun(): T)!
 	self._publishers = {} ---@type OrderedTable.Table<ReactivePublisher,true>
 	self._disabled = {}
 	self._noPublishersCallback = nil
@@ -49,7 +49,7 @@ end
 ---@param initialValueFunc fun(): T
 function ReactiveStream.__private:_Acquire(initialValueFunc)
 	assert(initialValueFunc)
-	self._initalValueFunc = initialValueFunc
+	self._initialValueFunc = initialValueFunc
 end
 
 
@@ -63,7 +63,7 @@ function ReactiveStream:Release()
 	assert(not self._sending and not next(self._sendQueue))
 	assert(self:GetNumPublishers() == 0)
 	self._noPublishersCallback = nil
-	self._initalValueFunc = nil
+	self._initialValueFunc = nil
 	private.objectPool:Recycle(self)
 end
 
@@ -140,7 +140,7 @@ end
 ---@private
 ---@return T
 function ReactiveStream:_GetInitialValue()
-	return self._initalValueFunc()
+	return self._initialValueFunc()
 end
 
 ---@private
