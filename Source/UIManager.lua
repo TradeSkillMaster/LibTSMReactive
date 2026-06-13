@@ -126,7 +126,6 @@ end
 ---@param future Future The future
 ---@param action? string The action to send
 function UIManager:ManageFuture(stateKey, future, action)
-	assert(stateKey and future)
 	assert(not self._futureStateKey[future])
 	assert(not self._state[stateKey])
 	future:SetScript("OnDone", self:__closure("_HandleFutureDone"))
