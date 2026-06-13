@@ -38,7 +38,7 @@ end
 -- ============================================================================
 
 function ReactiveStream.__private:__init()
-	self._initalValueFunc = nil ---@type (fun(): T)!
+	self._initialValueFunc = nil ---@type (fun(): T)!
 	self._publishers = {} ---@type OrderedTable.Table<ReactivePublisher,true>
 	self._disabled = {}
 	self._noPublishersCallback = nil
