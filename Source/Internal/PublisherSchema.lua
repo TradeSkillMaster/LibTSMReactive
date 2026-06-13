@@ -164,12 +164,6 @@ function ReactivePublisherSchema.__protected:_AddStepHelper(stepType, ...)
 end
 
 ---@protected
-function ReactivePublisherSchema:_AddStepFromSharedSchema(stepType, ...)
-	self:_AddStepHelper(stepType, ...)
-	return self
-end
-
----@protected
 function ReactivePublisherSchema:_Commit()
 	-- Commit the generated code to a publisher
 	assert(self._codeGen and self._subject)
