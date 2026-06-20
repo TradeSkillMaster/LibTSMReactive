@@ -25,6 +25,7 @@ local STEP = EnumType.New("PUBLISHER_STEP", {
 	MAP_NIL_TO_VALUE = EnumType.NewValue(),
 	MAP_NON_NIL_WITH_FUNCTION = EnumType.NewValue(),
 	MAP_NON_NIL_WITH_METHOD = EnumType.NewValue(),
+	MAP_NON_NIL_WITH_LOOKUP_TABLE = EnumType.NewValue(),
 	INVERT_BOOLEAN = EnumType.NewValue(),
 	IGNORE_IF_KEY_EQUALS = EnumType.NewValue(),
 	IGNORE_IF_KEY_NOT_EQUALS = EnumType.NewValue(),
