@@ -8,7 +8,8 @@ local LibTSMReactive = select(2, ...).LibTSMReactive
 local UIManager = LibTSMReactive:DefineClassType("UIManager")
 local Log = LibTSMReactive:From("LibTSMUtil"):Include("Util.Log")
 
----@alias UIManagerActionHandler fun(manager: UIManager, state: ReactiveState, action: string, ...: any)
+---@class UIManager<T:ReactiveState>
+---@alias UIManagerActionHandler<T:ReactiveState> fun(manager: UIManager, state: T, action: string, ...: any)
 
 
 
@@ -17,10 +18,11 @@ local Log = LibTSMReactive:From("LibTSMUtil"):Include("Util.Log")
 -- ============================================================================
 
 ---Creates a new UI manager object.
+---@generic T: ReactiveState
 ---@param name string The name for debugging purposes
----@param state ReactiveState The state
----@param actionHandler UIManagerActionHandler The action handler
----@return UIManager
+---@param state T The state
+---@param actionHandler UIManagerActionHandler<T> The action handler
+---@return UIManager<T>
 function UIManager.__static.Create(name, state, actionHandler)
 	return UIManager(name, state, actionHandler)
 end
@@ -33,8 +35,8 @@ end
 
 function UIManager.__private:__init(name, state, actionHandler)
 	self._name = name
-	self._state = state ---@type ReactiveState
-	self._actionHandler = actionHandler ---@type UIManagerActionHandler
+	self._state = state ---@type T
+	self._actionHandler = actionHandler ---@type UIManagerActionHandler<T>
 	self._cancellables = {}
 	self._futureStateKey = {}
 	self._futureAction = {}
@@ -55,16 +57,18 @@ end
 -- ============================================================================
 
 ---Sets up a publisher to assign any published values to the state.
----@param key string The key to set in the state
----@param publisher ReactivePublisherSchema The publisher
+---@generic K, V: T[K]
+---@param key K The key to set in the state
+---@param publisher ReactivePublisherSchema<V> The publisher
 function UIManager:SetStateFromPublisher(key, publisher)
 	publisher:AssignToTableKey(self._state, key)
 		:StoreIn(self._cancellables)
 end
 
 ---Sets a state field based on the result of an expression on the state
----@param key string The key to set in the state
----@param expression string The expression to apply to the state
+---@generic K, R: T[K]
+---@param key K The key to set in the state
+---@param expression expression<T & ReactiveExprBuiltins, R> The expression to apply to the state
 function UIManager:SetStateFromExpression(key, expression)
 	self._state:Publisher(expression)
 		:AssignToTableKey(self._state, key)
@@ -88,9 +92,10 @@ function UIManager:ProcessActionFromPublisher(action, publisher)
 end
 
 ---Mirrors a state key with a given table.
----@param key string The state key
----@param tbl table The table to assign to
----@param tblKey string The key within the table to assign to
+---@generic K: keyof T, TBL, TBLKey: keyof TBL
+---@param key K The state key
+---@param tbl TBL The table to assign to
+---@param tblKey TBLKey The key within the table to assign to
 function UIManager:MirrorStateWithTable(key, tbl, tblKey)
 	self._state[key] = tbl[tblKey]
 	self._state:Publisher(key)
@@ -122,7 +127,8 @@ function UIManager:ProcessAction(action, ...)
 end
 
 ---Sends an action when a future is done (passing through the value).
----@param stateKey string The state key to store the future at
+---@generic K: keyof T
+---@param stateKey K The state key to store the future at
 ---@param future Future The future
 ---@param action? string The action to send
 function UIManager:ManageFuture(stateKey, future, action)
@@ -135,7 +141,8 @@ function UIManager:ManageFuture(stateKey, future, action)
 end
 
 ---Cancels a future previously added via `:ManageFuture()`.
----@param stateKey string The state key to use to store the future
+---@generic K: keyof T
+---@param stateKey K The state key to use to store the future
 function UIManager:CancelFuture(stateKey)
 	local future = self._state[stateKey]
 	assert(future and self._futureStateKey[future] == stateKey)
