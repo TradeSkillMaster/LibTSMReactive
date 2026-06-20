@@ -61,7 +61,8 @@ end
 ---Map non-nil publishes values to another value.
 ---@generic A, R
 ---@overload fun(map: (fun(value: T, arg: A): R), arg?: A): self<R>
----@param map (fun(value: T, arg: A): R)|string Either a map function or method call (in the form "MyMethod()") for non-nil values
+---@overload fun(map: table<T,R>): self<R>
+---@param map (fun(value: T, arg: A): R)|string|table<T,R> Either a map function, method call (in the form "MyMethod()"), or lookup table
 ---@param arg? A An additional argument to pass to the map function or method
 ---@return self
 function ReactivePublisherSchemaBase:MapNonNil(map, arg)
@@ -70,6 +71,9 @@ function ReactivePublisherSchemaBase:MapNonNil(map, arg)
 		self:_AddStepHelper(STEP.MAP_NON_NIL_WITH_FUNCTION, map, arg)
 	elseif mapType == "string" and strsub(map, -2) == "()" then
 		self:_AddStepHelper(STEP.MAP_NON_NIL_WITH_METHOD, strsub(map, 1, -3), arg)
+	elseif mapType == "table" then
+		assert(arg == nil)
+		self:_AddStepHelper(STEP.MAP_NON_NIL_WITH_LOOKUP_TABLE, map)
 	else
 		error("Invalid map type: "..tostring(map), 2)
 	end

@@ -55,6 +55,7 @@ local UNOPTIMIZABLE_STEPS = {
 	[STEP.MAP_WITH_LOOKUP_TABLE] = true,
 	[STEP.MAP_NON_NIL_WITH_FUNCTION] = true,
 	[STEP.MAP_NON_NIL_WITH_METHOD] = true,
+	[STEP.MAP_NON_NIL_WITH_LOOKUP_TABLE] = true,
 }
 local OPTIMIZATION_IGNORED_STEPS = {
 	[STEP.PRINT] = true,
@@ -220,7 +221,12 @@ STEP_INFO[STEP.MAP_NON_NIL_WITH_METHOD].codeTemplate =
   if not func then
     error("Method ("..tostring(key)..") does not exist on object ("..tostring(data)..")")
   end
-  data = func(data, context[%(contextArgIndex)d])
+  data = context[%(contextArgIndex)d][data]
+end]=]
+STEP_INFO[STEP.MAP_NON_NIL_WITH_LOOKUP_TABLE] = { argTypes = { ARG_TYPE.TABLE } }
+STEP_INFO[STEP.MAP_NON_NIL_WITH_LOOKUP_TABLE].codeTemplate =
+[=[if data ~= nil then
+  data = context[%(contextArgIndex)d][data]
 end]=]
 STEP_INFO[STEP.INVERT_BOOLEAN] = { argTypes = {} }
 STEP_INFO[STEP.INVERT_BOOLEAN].codeTemplate =
