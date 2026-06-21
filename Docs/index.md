@@ -91,7 +91,7 @@ private.manager = UIManager.Create("CLICK_COUNTER", state, private.ActionHandler
 The action handler is responsible for responding to actions in order to mutate the state.
 
 ```lua
----@param manager UIManager
+---@param manager UIManager<ClickCounterUIState>
 ---@param state ClickCounterUIState
 function private.ActionHandler(manager, state, action, ...)
    if action == "ACTION_HANDLE_CLICK" then

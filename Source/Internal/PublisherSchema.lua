@@ -104,8 +104,9 @@ function ReactivePublisherSchema:CallFunction(func, arg)
 end
 
 ---Assigns published values to the specified key in the table.
----@param tbl table The table to assign the published values into
----@param key string The key to assign the published values at
+---@generic TBL, K: keyof TBL
+---@param tbl TBL The table to assign the published values into
+---@param key K The key to assign the published values at
 ---@return ReactivePublisher
 function ReactivePublisherSchema:AssignToTableKey(tbl, key)
 	assert(not self._hasShare)
