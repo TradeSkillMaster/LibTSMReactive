@@ -94,8 +94,9 @@ function ReactivePublisherSchema:CallMethod(obj, method, arg)
 end
 
 ---Calls a function with the published values.
----@param func fun(value: T) The function to call with the published values
----@param arg? any An additional argument to pass to the function
+---@generic A: any
+---@param func fun(value: T, arg?: A) The function to call with the published values
+---@param arg? A An additional argument to pass to the function
 ---@return ReactivePublisher
 function ReactivePublisherSchema:CallFunction(func, arg)
 	assert(not self._hasShare)
