@@ -221,7 +221,7 @@ STEP_INFO[STEP.MAP_NON_NIL_WITH_METHOD].codeTemplate =
   if not func then
     error("Method ("..tostring(key)..") does not exist on object ("..tostring(data)..")")
   end
-  data = context[%(contextArgIndex)d][data]
+  data = func(data, context[%(contextArgIndex)d])
 end]=]
 STEP_INFO[STEP.MAP_NON_NIL_WITH_LOOKUP_TABLE] = { argTypes = { ARG_TYPE.TABLE } }
 STEP_INFO[STEP.MAP_NON_NIL_WITH_LOOKUP_TABLE].codeTemplate =
