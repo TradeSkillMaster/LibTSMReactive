@@ -132,6 +132,13 @@ function TestState:TestPublisher()
 		:Map("GetValue()", 1)
 		:CallFunction(function(value) tinsert(publishedValues4, value) end)
 	assertEquals(publishedValues4, {3})
+
+	local publishedValues5 = {}
+	state:Publisher("num1")
+		:ReplaceWith({val = 2, GetValue = function(self, extra) return self.val + extra end})
+		:MapNonNil("GetValue()", 1)
+		:CallFunction(function(value) tinsert(publishedValues5, value) end)
+	assertEquals(publishedValues5, {3})
 end
 
 function TestState:TestNilDuplicates()
