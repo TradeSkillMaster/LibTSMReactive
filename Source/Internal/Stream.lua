@@ -7,7 +7,6 @@
 local LibTSMReactive = select(2, ...).LibTSMReactive
 local ReactiveStream = LibTSMReactive:DefineInternalClassType("ReactiveStream")
 local ReactivePublisherSchema = LibTSMReactive:IncludeClassType("ReactivePublisherSchema")
-local OrderedTable = LibTSMReactive:From("LibTSMUtil"):Include("BaseType.OrderedTable")
 local ObjectPool = LibTSMReactive:From("LibTSMUtil"):IncludeClassType("ObjectPool")
 local private = {
 	objectPool = ObjectPool.New("STREAM", ReactiveStream, 0),
@@ -39,7 +38,9 @@ end
 
 function ReactiveStream.__private:__init()
 	self._initialValueFunc = nil ---@type (fun(): T)!
-	self._publishers = {} ---@type OrderedTable.Table<ReactivePublisher,true>
+	self._publishers = {} ---@type (ReactivePublisher|false)[]
+	self._publisherIndex = {} ---@type table<ReactivePublisher,number>
+	self._numPublishers = 0
 	self._disabled = {}
 	self._noPublishersCallback = nil
 	self._sending = false
@@ -80,12 +81,17 @@ function ReactiveStream:Send(data)
 	assert(not self._sending and #sendQueue == 0)
 	self._sending = true
 	local publishers = self._publishers
+	local numQueued = 0
 	for i = 1, #publishers do
-		sendQueue[i] = publishers[i]
+		local publisher = publishers[i]
+		if publisher then
+			numQueued = numQueued + 1
+			sendQueue[numQueued] = publisher
+		end
 	end
-	for i = 1, #sendQueue do
+	for i = 1, numQueued do
 		local publisher = sendQueue[i]
-		if self._publishers[publisher] and not self._disabled[publisher] then
+		if self._publisherIndex[publisher] and not self._disabled[publisher] then
 			publisher:_HandleData(data)
 		end
 	end
@@ -105,7 +111,7 @@ end
 ---Gets the number of publishers on the stream.
 ---@return number
 function ReactiveStream:GetNumPublishers()
-	return #self._publishers
+	return self._numPublishers
 end
 
 
@@ -117,15 +123,27 @@ end
 ---@private
 ---@param publisher ReactivePublisher
 function ReactiveStream:_AddPublisher(publisher)
-	OrderedTable.Insert(self._publishers, publisher, true)
+	assert(not self._publisherIndex[publisher])
+	local index = #self._publishers + 1
+	self._publishers[index] = publisher
+	self._publisherIndex[publisher] = index
+	self._numPublishers = self._numPublishers + 1
 end
 
 ---@private
 ---@param publisher ReactivePublisher
 function ReactiveStream:_RemovePublisher(publisher)
-	OrderedTable.Remove(self._publishers, publisher)
+	local publishers = self._publishers
+	local index = self._publisherIndex[publisher]
+	assert(index)
+	self._publisherIndex[publisher] = nil
+	publishers[index] = false
+	self._numPublishers = self._numPublishers - 1
 	self._disabled[publisher] = nil
-	if self:GetNumPublishers() == 0 and self._noPublishersCallback then
+	if #publishers > self._numPublishers * 2 then
+		self:_CompactPublishers()
+	end
+	if self._numPublishers == 0 and self._noPublishersCallback then
 		self:_noPublishersCallback()
 	end
 end
@@ -147,4 +165,21 @@ end
 ---@return boolean
 function ReactiveStream:_RequiresOptimized()
 	return false
+end
+
+function ReactiveStream.__private:_CompactPublishers()
+	local publishers = self._publishers
+	local publisherIndex = self._publisherIndex
+	local numPublishers = 0
+	for i = 1, #publishers do
+		local publisher = publishers[i]
+		if publisher then
+			numPublishers = numPublishers + 1
+			publishers[numPublishers] = publisher
+			publisherIndex[publisher] = numPublishers
+		end
+	end
+	for i = #publishers, numPublishers + 1, -1 do
+		publishers[i] = nil
+	end
 end
